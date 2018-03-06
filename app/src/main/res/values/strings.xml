@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">RedWolf Recovery Project</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_model">Device Model</string>
+    <string name="device_ram">Memory (RAM)</string>
+    <string name="device_support">Support Status</string>
+    <string name="device_support_true">Device Officially Supported</string>
+    <string name="device_support_false">Device Not Supported</string>
+    <string name="device_maintainer">Maintainer</string>
+    <string name="version">Latest Version</string>
+    <string name="last_update">Last Updated</string>
+    <string name="install_download">Download &amp; Install</string>
+    <string name="install_local">Install from Local</string>
+    <string name="backup_recovery">Backup Current Recovery</string>
+    <string name="unknown">Unknown</string>
+    <string name="title_finished">Action Finished</string>
+    <string name="backup_complete">Recovery partition successfully backed up to the selected location.</string>
+    <string name="question_confirm_flash">Are you sure..? Do you want to flash the following file to recovery..?</string>
+    <string name="string_okay">Ok</string>
+    <string name="string_cancel">Cancel</string>
+    <string name="build">Build</string>
+    <string name="network_warning">Network not connected. Please turn on data or connect to wifi.</string>
+    <string name="flash_completed_local">Selected image file successfully flashed to recovery.</string>
+    <string name="su_error">Root permission denied. Please allow root permissions to use this app.</string>
+    <string name="fs_error">Filesystem permission denied. Please allow necessary permissions to use this app.</string>
+    <string name="install_download_cancel">Installation of ZIP file for 2GB variant was cancelled. However, the downloaded file is placed in "Downloads". You can flash it from your existing custom recovery.</string>
+    <string name="error">Error</string>
+    <string name="info">Information</string>
+</resources>
