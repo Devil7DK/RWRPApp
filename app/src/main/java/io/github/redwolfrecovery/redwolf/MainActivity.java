@@ -334,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
                                         try {
                                             Process SU = Runtime.getRuntime().exec(command);
                                             SU.waitFor();
+                                            destDir.delete();
                                             SU = Runtime.getRuntime().exec("su -c echo 'install "+ zipFile.getAbsolutePath()+"' > /cache/recovery/openrecoveryscript");
                                             SU.waitFor();
                                             SU = Runtime.getRuntime().exec("su -c reboot recovery");
