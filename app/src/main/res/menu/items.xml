@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/reboot"
+        android:title="@string/reboot" />
+    <item
+        android:id="@+id/reboot_recovery"
+        android:title="@string/reboot_recovery" />
+    <item
+        android:id="@+id/reboot_bootloader"
+        android:title="@string/reboot_bootloader" />
+</menu>

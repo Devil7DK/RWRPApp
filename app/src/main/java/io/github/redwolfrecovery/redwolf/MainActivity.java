@@ -16,6 +16,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -111,6 +114,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.items, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
     @Override
     protected void onStart()
     {
@@ -201,6 +213,54 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
+        final MenuItem val=item;
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(which==DialogInterface.BUTTON_POSITIVE){
+                    String command="";
+                    switch(val.getItemId()){
+                        case R.id.reboot:
+                            command="reboot";
+                            break;
+                        case R.id.reboot_recovery:
+                            command="reboot recovery";
+                            break;
+                        case R.id.reboot_bootloader:
+                            command="reboot bootloader";
+                            break;
+                    }
+                    try {
+                        Process SU = Runtime.getRuntime().exec("su -c " + command);
+                        SU.waitFor();
+                    }
+                    catch(Exception ex){
+                        Log.e("Reboot",ex.getMessage());
+                    }
+                }
+            }
+        };
+        dlgAlert.setTitle(R.string.confirm_reboot_title);
+        switch(val.getItemId()){
+            case R.id.reboot:
+                dlgAlert.setMessage(R.string.confirm_reboot_msg).setPositiveButton(R.string.string_yes, dialogClickListener)
+                        .setNegativeButton(R.string.string_cancel, dialogClickListener).show();
+                break;
+            case R.id.reboot_recovery:
+                dlgAlert.setMessage(R.string.confirm_reboot_recovery).setPositiveButton(R.string.string_yes, dialogClickListener)
+                        .setNegativeButton(R.string.string_cancel, dialogClickListener).show();
+                break;
+            case R.id.reboot_bootloader:
+                dlgAlert.setMessage(R.string.confirm_reboot_bootloader).setPositiveButton(R.string.string_yes, dialogClickListener)
+                        .setNegativeButton(R.string.string_cancel, dialogClickListener).show();
+                break;
+        }
+        return true;
+    }
+
     int Mb2Gb(long RAMinMb){
         if(RAMinMb > 5500){
             return 6;
@@ -276,7 +336,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String unused) {
             String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/"+Filename;
             File rw = new File(filePath);
-            String extension=Filename.substring(Filename.lastIndexOf("."));
             if(rw.exists()){
                 if(RAMSize > 2500){
                     String command = "su -c dd if=" + filePath + " of=/dev/block/bootdevice/by-name/recovery";

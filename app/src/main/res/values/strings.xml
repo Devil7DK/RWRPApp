@@ -17,6 +17,7 @@
     <string name="backup_complete">Recovery partition successfully backed up to the selected location</string>
     <string name="question_confirm_flash">Are you sure you want to flash the following file as recovery?</string>
     <string name="string_okay">OK</string>
+    <string name="string_yes">Yes</string>
     <string name="string_cancel">Cancel</string>
     <string name="build">Build</string>
     <string name="network_warning">No Internet connection. Please turn on data or connect to Wi-Fi</string>
@@ -26,4 +27,11 @@
     <string name="install_download_cancel">Installation of ZIP file for 2GB variant was cancelled. However, the downloaded file is placed in "Downloads". You can flash it from your existing custom recovery</string>
     <string name="error">Error</string>
     <string name="info">Information</string>
+    <string name="reboot">Reboot</string>
+    <string name="reboot_recovery">Reboot to recovery</string>
+    <string name="reboot_bootloader">Reboot to bootloader</string>
+    <string name="confirm_reboot_title">Confirm reboot</string>
+    <string name="confirm_reboot_msg">Do you really want to reboot?</string>
+    <string name="confirm_reboot_recovery">Do you really want to reboot into recovery?</string>
+    <string name="confirm_reboot_bootloader">Do you really want to reboot into bootloader?</string>
 </resources>
