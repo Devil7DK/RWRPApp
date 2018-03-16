@@ -342,7 +342,6 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         Process SU = Runtime.getRuntime().exec(command);
                         SU.waitFor();
-                        Thread.sleep(2000);
                         Toast.makeText(MainActivity.this, "RedWolf Downloaded & Flashed Successfully", Toast.LENGTH_LONG).show();
                     }
                     catch(Exception ex){
