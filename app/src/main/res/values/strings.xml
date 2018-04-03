@@ -42,4 +42,21 @@
     <string name="download_speed_bytes">%1$d B/s</string>
     <string name="download_speed_kb">%1$s KB/s</string>
     <string name="download_speed_mb">%1$s MB/s</string>
+
+    <string name="downloader_title">Downloading...</string>
+    <string name="pause">PAUSE</string>
+    <string name="resume">RESUME</string>
+
+    <string name="download_complete_title">Download Completed</string>
+    <string name="download_complete_msg">RedWolf has been successfully downloaded.</string>
+    <string name="download_interrupted_title">Download Interrupted</string>
+    <string name="download_interrupted_msg">Download has been interrupted due to unknown error.</string>
+    <string name="download_cancelled_title">Download Cancelled</string>
+    <string name="download_cancelled_msg">Download has been cancelled by the user.</string>
+
+    <!-- Notification -->
+    <string name="notification_paused">Paused</string>
+    <string name="notification_cancelled">Download Cancelled</string>
+    <string name="notification_completed">Download Completed</string>
+    <string name="notification_error">Unknown Error</string>
 </resources>
