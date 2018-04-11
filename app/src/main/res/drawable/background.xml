@@ -3,9 +3,9 @@
 
     <item android:drawable="@color/colorBack" />
 
-    <item>
-        <bitmap android:src="@drawable/logo"
-            android:gravity="center" />
-    </item>
+    <item android:drawable="@drawable/ic_wolf_color_large"
+        android:width="200dp"
+        android:height="263.40095dp"
+        android:gravity="center" />
 
 </layer-list>
