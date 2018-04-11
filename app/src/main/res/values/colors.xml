@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#892929</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorBack">#ffffff</color>
+    <!-- Fab Menu -->
+    <color name="colorFabLight">#de0000</color>
+    <color name="colorFabDark">#9c0000</color>
+    <color name="colorFabDisabled">#707070</color>
 </resources>

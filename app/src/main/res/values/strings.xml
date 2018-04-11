@@ -58,4 +58,10 @@
     <string name="notification_cancelled">Download Cancelled</string>
     <string name="notification_completed">Download Completed</string>
     <string name="notification_error">Unknown Error</string>
+
+    <!-- Fab Menu -->
+    <string name="fab_main">RedWolf Actions</string>
+    <string name="fab_flash">Download &amp; Install</string>
+    <string name="fab_flash_local">Install from storage</string>
+    <string name="fab_backup">Backup current recovery</string>
 </resources>

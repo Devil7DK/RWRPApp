@@ -1,5 +1,9 @@
 package io.github.redwolfrecovery.redwolf;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,8 +25,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     TextView txt_LatestVersion;
     TextView txt_Build;
     TextView txt_LastUpdated;
+    FloatingActionMenu fabMenu;
+    FloatingActionButton fab_DownloadFlash;
+    FloatingActionButton fab_LocalFlash;
+    FloatingActionButton fab_Backup;
     DownloadXML XML_Check;
     Boolean Checked=false;
     private static final int BUFFER_SIZE = 4096;
@@ -79,9 +92,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(" RedWolf Recovery Project");
-        getSupportActionBar().setLogo(R.drawable.icon);
+        getSupportActionBar().setLogo(R.drawable.ic_wolf_color_small);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
-        setContentView(R.layout.activity_redwolf__home);
+        setContentView(R.layout.activity_redwolf_home);
         RAMSize = Utils.GetMemorySize(this);
         txt_Device = (TextView) findViewById(R.id.txt_device_name_val);
         txt_Memory = (TextView) findViewById(R.id.txt_device_size_val);
@@ -90,6 +103,32 @@ public class MainActivity extends AppCompatActivity {
         txt_LatestVersion = (TextView) findViewById(R.id.txt_version_val);
         txt_LastUpdated = (TextView) findViewById(R.id.txt_updated_val);
         txt_Build = (TextView) findViewById(R.id.txt_build_val);
+        fabMenu = (FloatingActionMenu) findViewById(R.id.rw_fab_menu);
+        fab_DownloadFlash = (FloatingActionButton)  findViewById(R.id.fab_install_download);
+        fab_LocalFlash = (FloatingActionButton)  findViewById(R.id.fab_install_local);
+        fab_Backup = (FloatingActionButton)  findViewById(R.id.fab_backup);
+        fab_DownloadFlash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DownloadAndInstall();
+                fabMenu.close(true);
+            }
+        });
+        fab_Backup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BackupRecovery();
+                fabMenu.close(true);
+            }
+        });
+        fab_LocalFlash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                InstallFromLocal();
+                fabMenu.close(true);
+            }
+        });
+        setCustomAnimation(fabMenu,R.drawable.ic_arrow_up, R.drawable.ic_arrow_down);
         XML_Check = new DownloadXML();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         device_name = Build.DEVICE;
@@ -126,6 +165,36 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
+    private void setCustomAnimation(final FloatingActionMenu fabMenu, final int normal, final int pressed) {
+        AnimatorSet set = new AnimatorSet();
+
+        ObjectAnimator scaleOutX = ObjectAnimator.ofFloat(fabMenu.getMenuIconView(), "scaleX", 1.0f, 0.2f);
+        ObjectAnimator scaleOutY = ObjectAnimator.ofFloat(fabMenu.getMenuIconView(), "scaleY", 1.0f, 0.2f);
+
+        ObjectAnimator scaleInX = ObjectAnimator.ofFloat(fabMenu.getMenuIconView(), "scaleX", 0.2f, 1.0f);
+        ObjectAnimator scaleInY = ObjectAnimator.ofFloat(fabMenu.getMenuIconView(), "scaleY", 0.2f, 1.0f);
+
+        scaleOutX.setDuration(50);
+        scaleOutY.setDuration(50);
+
+        scaleInX.setDuration(50);
+        scaleInY.setDuration(50);
+
+        scaleInX.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                fabMenu.getMenuIconView().setImageResource(fabMenu.isOpened()
+                        ? normal : pressed);
+            }
+        });
+
+        set.play(scaleOutX).with(scaleOutY);
+        set.play(scaleInX).with(scaleInY).after(scaleOutX);
+        set.setInterpolator(new OvershootInterpolator(2));
+
+        fabMenu.setIconToggleAnimatorSet(set);
+    }
+
     public void LoadPrefs(){
         String maintainer = preferences.getString("maintainer","");
         String rw_version = preferences.getString("rw_version","");
@@ -139,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         if(!rw_build.equalsIgnoreCase("")){txt_Build.setText(rw_build);}else{txt_Build.setText("NA");}
     }
 
-    public void DownloadAndInstall(View v){
+    private void DownloadAndInstall(){
         if(Utils.isNetworkAvailable(getApplicationContext()))
         {
             if(RAMSize < 2500){
@@ -154,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void InstallFromLocal_OnClick(View v){
+    private void InstallFromLocal(){
         OpenFileDialog dialog = new OpenFileDialog(this);
         dialog.setFilter("(.*).img");
         dialog.setOpenDialogListener(new OpenFileDialog.OpenDialogListener() {
@@ -180,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
         });
         dialog.show();
     }
-    public void BackupRecovery_OnClick(View e)
+    private void BackupRecovery()
     {
         OpenFileDialog dialog = new OpenFileDialog(this);
         dialog.setFilter("*img");

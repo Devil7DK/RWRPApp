@@ -26,4 +26,5 @@ dependencies {
     implementation 'org.jetbrains:annotations:16.0.1'
     implementation 'com.tonyodev.fetch2:fetch2:2.0.0-RC2'
     implementation 'com.tonyodev.fetch2downloaders:fetch2downloaders:2.0.0-RC2'
+    implementation 'com.github.clans:fab:1.6.2'
 }
