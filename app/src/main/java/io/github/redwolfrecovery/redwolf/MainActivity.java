@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     String device_name;
     String device_build;
     TextView txt_Device;
-    TextView txt_Model;
     TextView txt_Memory;
     TextView txt_SupportStatus;
     TextView txt_Maintainer;
@@ -85,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_redwolf__home);
         RAMSize = Utils.GetMemorySize(this);
         txt_Device = findViewById(R.id.txt_device_name_val);
-        txt_Model = findViewById(R.id.txt_device_model_val);
         txt_Memory = findViewById(R.id.txt_device_size_val);
         txt_SupportStatus = findViewById(R.id.txt_support_status_val);
         txt_Maintainer = findViewById(R.id.txt_maintainer_val);
@@ -95,8 +93,7 @@ public class MainActivity extends AppCompatActivity {
         XML_Check = new DownloadXML();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         device_name = Build.DEVICE;
-        txt_Device.setText(Build.DEVICE);
-        txt_Model.setText(Build.MODEL);
+        txt_Device.setText(Build.MODEL + " (" + Build.DEVICE + ")");
         txt_Memory.setText(Mb2Gb(RAMSize) + " GB");
         LoadPrefs();
         dlgAlert = new AlertDialog.Builder(this);
@@ -135,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         String last_updated = preferences.getString("last_updated","");
         boolean supported = preferences.getBoolean("supported",false);
         String rw_build = preferences.getString("rw_build","");
-        if(supported){txt_SupportStatus.setText("Officially Supported");}else{txt_SupportStatus.setText("Not supported");}
+        if(supported){txt_SupportStatus.setText(R.string.device_support_true);}else{txt_SupportStatus.setText(R.string.device_support_false);}
         if(!maintainer.equalsIgnoreCase("")){txt_Maintainer.setText(maintainer);}else{txt_Maintainer.setText("NA");}
         if(!last_updated.equalsIgnoreCase("")){txt_LastUpdated.setText(last_updated);}else{txt_LastUpdated.setText("NA");}
         if(!rw_version.equalsIgnoreCase("")){txt_LatestVersion.setText(rw_version);}else{txt_LatestVersion.setText("NA");}
@@ -535,7 +532,7 @@ public class MainActivity extends AppCompatActivity {
                     String LastUpdated = eElement.getAttribute("date");
                     String Build_ = eElement.getAttribute("build");
                     device_build = Build_;
-                    txt_SupportStatus.setText("Officially Supported");
+                    txt_SupportStatus.setText(R.string.device_support_true);
                     txt_Maintainer.setText(Maintainer);
                     txt_LatestVersion.setText(Version_);
                     txt_LastUpdated.setText(LastUpdated);
@@ -551,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
             }
             if(device_found==false)
             {
-                txt_SupportStatus.setText("Not Supported");
+                txt_SupportStatus.setText(R.string.device_support_false);
             }
         }
     }
