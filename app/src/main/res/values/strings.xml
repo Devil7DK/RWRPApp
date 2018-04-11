@@ -41,4 +41,10 @@
     <string name="download_speed_bytes">%1$d B/s</string>
     <string name="download_speed_kb">%1$s KB/s</string>
     <string name="download_speed_mb">%1$s MB/s</string>
+
+    <!-- Fab Menu -->
+    <string name="fab_main">RedWolf Actions</string>
+    <string name="fab_flash">Download &amp; Install</string>
+    <string name="fab_flash_local">Install from storage</string>
+    <string name="fab_backup">Backup current recovery</string>
 </resources>
