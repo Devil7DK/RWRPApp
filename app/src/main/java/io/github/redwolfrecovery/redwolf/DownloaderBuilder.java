@@ -49,7 +49,6 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
 
     private ProgressBar progressBar;
     private TextView txt_percentage;
-    private TextView txt_speed;
     private TextView txt_remaining;
     private Button btn_cancel;
     private Button btn_pause;
@@ -91,25 +90,19 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
     }
 
     private void assignObjects(View view){
-        progressBar = view.findViewById(R.id.download_progress);
-        txt_percentage = view.findViewById(R.id.download_percentage);
-        txt_remaining = view.findViewById(R.id.download_remaining);
-        txt_speed = view.findViewById(R.id.download_speed);
-        btn_cancel = view.findViewById(R.id.download_cancel);
-        btn_pause = view.findViewById(R.id.download_pause);
+        progressBar = (ProgressBar) view.findViewById(R.id.download_progress);
+        txt_percentage = (TextView) view.findViewById(R.id.download_percentage);
+        txt_remaining = (TextView) view.findViewById(R.id.download_remaining);
+        btn_cancel = (Button) view.findViewById(R.id.download_cancel);
+        btn_pause = (Button) view.findViewById(R.id.download_pause);
         fetch_instance =  new Fetch.Builder(getContext().getApplicationContext(), FETCH_NAMESPACE)
                 .setDownloader(new OkHttpDownloader(new OkHttpClient.Builder().build()))
                 .setDownloadConcurrentLimit(1)
                 .enableLogging(true)
-                .enableRetryOnNetworkGain(false)
                 .build();
         mNotifyManager = (NotificationManager) getContext().getApplicationContext().getSystemService(Activity.NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            mBuilder = new NotificationCompat.Builder(getContext().getApplicationContext(),"redwolf");
-        }else{
-            mBuilder = new NotificationCompat.Builder(getContext().getApplicationContext());
-            mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
-        }
+        mBuilder = new NotificationCompat.Builder(getContext().getApplicationContext());
+        mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
     }
 
     private void assignEvents(){
@@ -152,9 +145,9 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
         File file = new File(mFilePath);
 
         if(file.exists()){
-            fetch_instance.deleteAllWithStatus(Status.CANCELLED);
-            fetch_instance.deleteAllWithStatus(Status.FAILED);
-            fetch_instance.removeAllWithStatus(Status.COMPLETED);
+            fetch_instance.deleteGroup(Status.CANCELLED.getValue());
+            fetch_instance.deleteGroup(Status.FAILED.getValue());
+            fetch_instance.removeGroup(Status.COMPLETED.getValue());
         }
         else{
             fetch_instance.removeAll();
@@ -168,7 +161,7 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
                     fetch_instance.enqueue(fetch_request, new Func<Download>() {
                         @Override
                         public void call(@NotNull Download download) {
-                            updateProgress(download.getStatus(),download.getProgress(),0,0);
+                            updateProgress(download.getStatus(),download.getProgress(),0);
                         }
                     }, new Func<Error>() {
                         @Override
@@ -180,7 +173,7 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
                     fetch_request = download.getRequest();
                     downloadStatus = download.getStatus();
                     downloadID = download.getId();
-                    updateProgress(download.getStatus(),download.getProgress(),0,0);
+                    updateProgress(download.getStatus(),download.getProgress(),0);
                 }
             }
         });
@@ -212,10 +205,9 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
         }
     }
 
-    private void updateProgress(Status status, int progress,long etaInMilliseconds, long downloadedBytesPerSecond){
+    private void updateProgress(Status status, int progress,long etaInMilliseconds){
         String eta = Utils.getETAString(getContext(), etaInMilliseconds);
         txt_remaining.setText(eta);
-        txt_speed.setText(Utils.getDownloadSpeedString(getContext(), downloadedBytesPerSecond));
         switch (status) {
             case QUEUED:{
                 txt_percentage.setText("");
@@ -251,7 +243,7 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
         if (fetch_request != null && fetch_request.getId() == download.getId()) {
             downloadID = download.getId();
             downloadStatus = download.getStatus();
-            updateProgress(download.getStatus(),download.getProgress(),0,0);
+            updateProgress(download.getStatus(),download.getProgress(),0);
         }
     }
 
@@ -296,11 +288,11 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
     }
 
     @Override
-    public void onProgress(@NotNull Download download, long etaInMilliseconds, long downloadedBytesPerSecond) {
+    public void onProgress(Download download, long etaInMilliseconds) {
         if (fetch_request != null && fetch_request.getId() == download.getId()) {
         downloadID = download.getId();
         downloadStatus = download.getStatus();
-        updateProgress(download.getStatus(),download.getProgress(),etaInMilliseconds, downloadedBytesPerSecond);
+        updateProgress(download.getStatus(),download.getProgress(),etaInMilliseconds);
         }
     }
 
@@ -309,7 +301,7 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
         if (fetch_request != null && fetch_request.getId() == download.getId()) {
             downloadID = download.getId();
             downloadStatus = download.getStatus();
-            updateProgress(download.getStatus(),download.getProgress(),0,0);
+            updateProgress(download.getStatus(),download.getProgress(),0);
         }
     }
 
@@ -318,7 +310,7 @@ public class DownloaderBuilder extends AlertDialog.Builder implements FetchListe
         if (fetch_request != null && fetch_request.getId() == download.getId()) {
             downloadID = download.getId();
             downloadStatus = download.getStatus();
-            updateProgress(download.getStatus(),download.getProgress(),0,0);
+            updateProgress(download.getStatus(),download.getProgress(),0);
         }
     }
 
