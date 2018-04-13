@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -26,6 +27,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     Boolean Checked=false;
     private static final int BUFFER_SIZE = 4096;
     SharedPreferences preferences;
-    final String XML_URL="https://redwolfrecovery.github.io/redwolf.xml";
+    final String XML_URL= "https://raw.githubusercontent.com/dineshthangavel47/redwolf-test/master/redwolf.xml?token=ADJNbBOAPT8NOH6gFa6XCu4dJJ8QTN6Qks5a2Z5RwA%3D%3D";//"https://redwolfrecovery.github.io/redwolf.xml";
     final String DownloadBaseURL="https://mirrors.c0urier.net/android/Dadi11/RedWolf/";
     String Filename;
     ProgressDialog progressdialog;
@@ -86,6 +90,10 @@ public class MainActivity extends AppCompatActivity {
     byte dataArray[] = new byte[1024];
     long totalSize = 0;
     Long RAMSize;
+    static LinearLayout layout_UpdateStatus;
+    static TextView txt_UpdateStatus;
+    static ImageView img_UpdateStatus;
+    static Button btn_CheckUpdates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +110,10 @@ public class MainActivity extends AppCompatActivity {
         txt_Maintainer = (TextView) findViewById(R.id.txt_maintainer_val);
         txt_LatestVersion = (TextView) findViewById(R.id.txt_version_val);
         txt_LastUpdated = (TextView) findViewById(R.id.txt_updated_val);
+        layout_UpdateStatus = (LinearLayout)  findViewById(R.id.layout_UpdateStatus);
+        layout_UpdateStatus.setVisibility(View.GONE);
+        txt_UpdateStatus = (TextView) findViewById(R.id.txtUpdateStatus);
+        img_UpdateStatus = (ImageView) findViewById(R.id.imgUpdateStatus);
         txt_Build = (TextView) findViewById(R.id.txt_build_val);
         fabMenu = (FloatingActionMenu) findViewById(R.id.rw_fab_menu);
         fab_DownloadFlash = (FloatingActionButton)  findViewById(R.id.fab_install_download);
@@ -126,6 +138,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 InstallFromLocal();
                 fabMenu.close(true);
+            }
+        });
+        btn_CheckUpdates = (Button) findViewById(R.id.btn_CheckUpdates);
+        btn_CheckUpdates.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CheckForUpdates();
             }
         });
         setCustomAnimation(fabMenu,R.drawable.ic_arrow_up, R.drawable.ic_arrow_down);
@@ -163,6 +182,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart()
     {
         super.onStart();
+    }
+
+    public static void CheckForUpdateResult(Boolean result, String Error){
+        Log.i("T","MAINCHECKERSULT");
+        if(result){
+            layout_UpdateStatus.setVisibility(View.VISIBLE);
+            img_UpdateStatus.setImageResource(R.drawable.ic_update_available);
+            txt_UpdateStatus.setText(R.string.update_available);
+            txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateOkay));
+            btn_CheckUpdates.setVisibility(View.GONE);
+        }else{
+            if(Error.equals("")){
+                layout_UpdateStatus.setVisibility(View.VISIBLE);
+                img_UpdateStatus.setImageResource(R.drawable.ic_update_notavailable);
+                txt_UpdateStatus.setText(R.string.update_not_available);
+                txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateOkay));
+            }else{
+                layout_UpdateStatus.setVisibility(View.VISIBLE);
+                img_UpdateStatus.setImageResource(R.drawable.ic_update_warning);
+                txt_UpdateStatus.setText(R.string.update_error);
+                txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateError));
+            }
+        }
     }
 
     private void setCustomAnimation(final FloatingActionMenu fabMenu, final int normal, final int pressed) {
@@ -206,6 +248,11 @@ public class MainActivity extends AppCompatActivity {
         if(!last_updated.equalsIgnoreCase("")){txt_LastUpdated.setText(last_updated);}else{txt_LastUpdated.setText("NA");}
         if(!rw_version.equalsIgnoreCase("")){txt_LatestVersion.setText(rw_version);}else{txt_LatestVersion.setText("NA");}
         if(!rw_build.equalsIgnoreCase("")){txt_Build.setText(rw_build);}else{txt_Build.setText("NA");}
+    }
+
+    private void CheckForUpdates(){
+        CheckforUpdatesTask task = CheckforUpdatesTask.getInstance(this, XML_URL, device_name);
+        task.execute(this);
     }
 
     private void DownloadAndInstall(){

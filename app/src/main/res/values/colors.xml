@@ -8,4 +8,7 @@
     <color name="colorFabLight">#de0000</color>
     <color name="colorFabDark">#9c0000</color>
     <color name="colorFabDisabled">#707070</color>
+    <!-- Updates -->
+    <color name="colorUpdateOkay">#0c6e10</color>
+    <color name="colorUpdateError">#910002</color>
 </resources>
