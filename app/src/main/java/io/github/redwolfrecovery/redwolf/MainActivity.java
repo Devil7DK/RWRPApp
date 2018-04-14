@@ -199,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 img_UpdateStatus.setImageResource(R.drawable.ic_update_notavailable);
                 txt_UpdateStatus.setText(R.string.update_not_available);
                 txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateOkay));
+                btn_CheckUpdates.setVisibility(View.GONE);
             }else{
                 layout_UpdateStatus.setVisibility(View.VISIBLE);
                 img_UpdateStatus.setImageResource(R.drawable.ic_update_warning);

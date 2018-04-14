@@ -33,7 +33,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
     private static String mURL;
     private static String mDeviceName;
     private static String mBuildID_Local,mBuildID_Remote;
-    private static String mError;
+    private static String mError = "";
 
     private CheckforUpdatesTask() {
     }
@@ -82,12 +82,15 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
             mBuildID_Local = Utils.getRecoveryIncrimentalVersion(mContext, dialog);
 
             if(mBuildID_Local.equals("")){
+                Log.e("CheckForUpdate", "Cannot retrieve build id from remote.");
                 mError = "Cannot retrieve build id from recovery.";
                 return false;
             }else if(mBuildID_Remote.equals("")){
+                Log.e("CheckForUpdate", "Cannot retrieve build id from remote.");
                 mError = "Cannot retrieve build id from remote.";
                 return false;
             }else{
+                Log.i("CheckForUpdate",  "Build ID : Local - " + mBuildID_Local + " Remote - " + mBuildID_Remote);
                 if(mBuildID_Remote.equals(mBuildID_Local)){
                     return false;
                 }else{
