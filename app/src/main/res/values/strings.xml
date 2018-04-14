@@ -58,13 +58,7 @@
     <string name="update_not_available">No update available / Up-to-date</string>
     <string name="update_error">Error on cheking for updates</string>
 
-    <string name="initialising">Initialising&#8230;</string>
-    <string name="preparing_executables">Preparing executables&#8230;</string>
-    <string name="removing_temp">Removing temp files&#8230;</string>
-    <string name="dumping_recoveryimage">Dumping recovery image&#8230;</string>
-    <string name="unpacking_recoveryimage">Unpacking recovery image&#8230;</string>
-    <string name="extracting_ramdisk">Extracting ramdisk&#8230;</string>
-    <string name="reading_prop">Reading recovery properties&#8230;</string>
+    <string name="checking_update">Checking for update&#8230;</string>
     <string name="failed">Failed</string>
 
     <!-- Notification -->

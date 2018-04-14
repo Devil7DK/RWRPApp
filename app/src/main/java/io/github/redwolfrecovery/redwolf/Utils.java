@@ -117,8 +117,7 @@ public class Utils {
         }
     }
 
-    public static String getRecoveryIncrimentalVersion(Context context, ProgressDialog progressDialog){
-        progressDialog.setMessage(context.getString(R.string.preparing_executables));
+    public static String getRecoveryIncrimentalVersion(Context context){
         PrepareExecutables(context);
 
         File temp = new File(context.getCacheDir() + File.separator + "temp");
@@ -128,7 +127,6 @@ public class Utils {
 
         try {
             if(temp.exists()){
-                progressDialog.setMessage(context.getString(R.string.removing_temp));
                 temp.delete();
             }else{temp.mkdirs();}
 
@@ -146,13 +144,9 @@ public class Utils {
             String cmd6 = "rm -rf !(default.prop)" +"\n";
             String cmd7 = "mv default.prop " + propfile.getAbsolutePath() + "\n";
 
-
-            progressDialog.setMessage(context.getString(R.string.dumping_recoveryimage));
             stdin.write(cmd1.getBytes());
             stdin.write(cmd2.getBytes());
-            progressDialog.setMessage(context.getString(R.string.unpacking_recoveryimage));
             stdin.write(cmd3.getBytes());
-            progressDialog.setMessage(context.getString(R.string.extracting_ramdisk));
             stdin.write(cmd4.getBytes());
             stdin.write(cmd5.getBytes());
             stdin.write(cmd6.getBytes());
@@ -162,11 +156,10 @@ public class Utils {
             stdin.flush();
 
             stdin.close();
-
+            
             process.waitFor();
             process.destroy();
 
-            progressDialog.setMessage(context.getString(R.string.reading_prop));
             Properties prop = new Properties();
             try{
 
@@ -181,7 +174,6 @@ public class Utils {
         } catch (Exception ex) {
         } finally {
             if(temp.exists()){
-                if(progressDialog.isShowing())progressDialog.setMessage(context.getString(R.string.removing_temp));
                 temp.delete();
             }
         }

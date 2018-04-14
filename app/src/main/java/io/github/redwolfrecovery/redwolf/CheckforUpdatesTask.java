@@ -79,7 +79,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 }
             }
 
-            mBuildID_Local = Utils.getRecoveryIncrimentalVersion(mContext, dialog);
+            mBuildID_Local = Utils.getRecoveryIncrimentalVersion(mContext);
 
             if(mBuildID_Local.equals("")){
                 Log.e("CheckForUpdate", "Cannot retrieve build id from remote.");
@@ -133,7 +133,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
     @Override
     protected void onPreExecute() {
         dialog = new ProgressDialog(mContext);
-        dialog.setMessage(mContext.getString(R.string.initialising));
+        dialog.setMessage(mContext.getString(R.string.checking_update));
         dialog.setIndeterminate(true);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.show();
