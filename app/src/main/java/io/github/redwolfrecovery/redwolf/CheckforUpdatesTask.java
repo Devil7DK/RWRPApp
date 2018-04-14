@@ -74,7 +74,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 List device= Arrays.asList(eElement.getAttribute("name").split(","));
                 if(device.contains(mDeviceName))
                 {
-                    mBuildID_Remote = eElement.getAttribute("incremental");
+                    mBuildID_Remote = eElement.getAttribute("utc_build_date");
                     break;
                 }
             }

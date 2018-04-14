@@ -171,7 +171,7 @@ public class Utils {
             try{
 
                 prop.load(new FileInputStream(propfile.getAbsolutePath()));
-                String v1 = prop.getProperty("ro.build.version.incremental","");
+                String v1 = prop.getProperty("ro.bootimage.build.date.utc","");
                 //propfile.delete();
                 return v1;
             }catch (Exception ex){
