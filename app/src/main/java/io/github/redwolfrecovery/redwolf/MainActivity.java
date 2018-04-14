@@ -78,10 +78,9 @@ public class MainActivity extends AppCompatActivity {
     Boolean Checked=false;
     private static final int BUFFER_SIZE = 4096;
     SharedPreferences preferences;
-    final String XML_URL= "https://raw.githubusercontent.com/dineshthangavel47/redwolf-test/master/redwolf.xml?token=ADJNbBOAPT8NOH6gFa6XCu4dJJ8QTN6Qks5a2Z5RwA%3D%3D";//"https://redwolfrecovery.github.io/redwolf.xml";
+    final String XML_URL= "https://redwolfrecovery.github.io/redwolf.xml";
     final String DownloadBaseURL="https://mirrors.c0urier.net/android/Dadi11/RedWolf/";
     String Filename;
-    ProgressDialog progressdialog;
     URL url;
     URLConnection urlconnection ;
     int FileSize;
@@ -94,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
     static TextView txt_UpdateStatus;
     static ImageView img_UpdateStatus;
     static Button btn_CheckUpdates;
+    static Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
             Toast msg = Toast.makeText(getApplicationContext(),R.string.network_warning,Toast.LENGTH_SHORT);
             msg.show();
         }
+        mContext = this;
     }
 
 
@@ -258,17 +259,53 @@ public class MainActivity extends AppCompatActivity {
     private void DownloadAndInstall(){
         if(Utils.isNetworkAvailable(getApplicationContext()))
         {
-            if(RAMSize < 2500){
-                Filename="RedWolf-" + device_build + "-" + device_name + "-2GB_RAM.zip";
-            }else{
-                Filename="RedWolf-" + device_build + "-" + device_name + ".img";
-            }
-            new DownloadAndFlash().execute(DownloadBaseURL + device_name + "/" + Filename);
+            Filename="RedWolf-" + device_build + "-" + device_name + ".img";
+            Downloader downloader = new Downloader(this, DownloadBaseURL + device_name + "/" + Filename);
+            downloader.setDownloadTaskListener(downloadTask);
+            downloader.execute("RW");
         }else{
             Toast msg = Toast.makeText(getApplicationContext(),R.string.network_warning,Toast.LENGTH_SHORT);
             msg.show();
         }
     }
+
+    Downloader.DownloadTask downloadTask  = new Downloader.DownloadTask() {
+        @Override
+        public void onDownloadCompleted(String ID, String FilePath) {
+            ProgressDialog progressDialog = new ProgressDialog(mContext);
+            progressDialog.setMessage(getString(R.string.flashing));
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+            File rw = new File(FilePath);
+            if(rw.exists()){
+                if(RAMSize > 2500){
+                    String command = "su -c dd if=" + FilePath + " of=/dev/block/bootdevice/by-name/recovery";
+                    try {
+                        Process SU = Runtime.getRuntime().exec(command);
+                        SU.waitFor();
+                        Toast.makeText(MainActivity.this, "RedWolf Downloaded & Flashed Successfully", Toast.LENGTH_LONG).show();
+                    }
+                    catch(Exception ex){
+                        Log.e("FlashIMG",ex.getMessage());
+                    }
+
+                }
+
+            }
+            if(progressDialog.isShowing()){progressDialog.dismiss();}
+        }
+
+        @Override
+        public void onDownloadCanceled(String ID) {
+            Toast.makeText(MainActivity.this, "Download cancelled by user", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onDownloadError(String ID, String Error) {
+            Toast.makeText(MainActivity.this, "Download interrupted due to \"" + Error + "\"", Toast.LENGTH_LONG).show();
+        }
+    };
 
     private void InstallFromLocal(){
         OpenFileDialog dialog = new OpenFileDialog(this);
@@ -394,164 +431,6 @@ public class MainActivity extends AppCompatActivity {
             return 1;
         }
     }
-
-    public class DownloadAndFlash extends AsyncTask<String, String, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressdialog = new ProgressDialog(MainActivity.this);
-            progressdialog.setMessage("Downloading " + Filename);
-            progressdialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressdialog.setCancelable(false);
-            progressdialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... aurl) {
-
-            int count;
-
-            try {
-
-                url = new URL(aurl[0]);
-                urlconnection = url.openConnection();
-                urlconnection.connect();
-
-                FileSize = urlconnection.getContentLength();
-
-                inputstream = new BufferedInputStream(url.openStream());
-                outputstream = new FileOutputStream(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/"+Filename);
-
-
-                while ((count = inputstream.read(dataArray)) != -1) {
-
-                    totalSize += count;
-
-                    publishProgress(""+(int)((totalSize*100)/FileSize));
-
-                    outputstream.write(dataArray, 0, count);
-                }
-
-                outputstream.flush();
-                outputstream.close();
-                inputstream.close();
-
-            } catch (Exception e) {Log.e("Download",e.getMessage());}
-            return null;
-
-        }
-        protected void onProgressUpdate(String... progress) {
-            progressdialog.setProgress(Integer.parseInt(progress[0]));
-        }
-
-        @Override
-        protected void onPostExecute(String unused) {
-            String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/"+Filename;
-            File rw = new File(filePath);
-            if(rw.exists()){
-                if(RAMSize > 2500){
-                    String command = "su -c dd if=" + filePath + " of=/dev/block/bootdevice/by-name/recovery";
-                    try {
-                        Process SU = Runtime.getRuntime().exec(command);
-                        SU.waitFor();
-                        Toast.makeText(MainActivity.this, "RedWolf Downloaded & Flashed Successfully", Toast.LENGTH_LONG).show();
-                    }
-                    catch(Exception ex){
-                        Log.e("FlashIMG",ex.getMessage());
-                    }
-
-                }
-                else if(RAMSize < 2500)
-                {
-                    final String tmpDir = Environment.getExternalStorageDirectory() + "/WOLF/tmp";
-                    File Wolf = new File(Environment.getExternalStorageDirectory() + "/WOLF");
-                    if(!Wolf.exists()){Wolf.mkdir();}
-                    final File zipFile = new File(filePath);
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which){
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    try
-                                    {
-                                        File destDir = new File(tmpDir);
-                                        if (!destDir.exists()) {
-                                            destDir.delete();
-                                            destDir.mkdir();
-                                        }
-                                        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile));
-                                        ZipEntry entry = zipIn.getNextEntry();
-                                        // iterates over entries in the zip file
-                                        while (entry != null) {
-                                            try{
-                                                String zipfilePath = tmpDir + File.separator + entry.getName();
-                                                if (!entry.isDirectory()) {
-                                                    // if the entry is a file, extracts it
-                                                    extractFile(zipIn, zipfilePath);
-                                                } else {
-                                                    // if the entry is a directory, make the directory
-                                                    File dir = new File(zipfilePath);
-                                                    dir.mkdir();
-                                                }
-                                                zipIn.closeEntry();
-                                                entry = zipIn.getNextEntry();
-                                            }
-                                            catch (Exception ex){Log.e("ExtractZIP",ex.getMessage());}
-                                        }
-                                        zipIn.close();
-                                        String recimg=tmpDir + File.separator + "tools" + File.separator + "recovery.img";
-                                        String command = "su -c dd if=" + recimg + " of=/dev/block/bootdevice/by-name/recovery";
-                                        try {
-                                            Process SU = Runtime.getRuntime().exec(command);
-                                            SU.waitFor();
-                                            destDir.delete();
-                                            SU = Runtime.getRuntime().exec("su -c echo 'install "+ zipFile.getAbsolutePath()+"' > /cache/recovery/openrecoveryscript");
-                                            SU.waitFor();
-                                            SU = Runtime.getRuntime().exec("su -c reboot recovery");
-                                            SU.waitFor();
-                                        }catch(Exception ex){
-                                            Log.e("FlashIMG2GB",ex.getMessage());
-                                        }
-                                    }
-                                    catch (Exception ex){
-                                        Log.e("2GB",ex.getMessage());
-                                    }
-                                    break;
-
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    dlgAlert.setMessage(R.string.install_download_cancel);
-                                    dlgAlert.setTitle(R.string.info);
-                                    dlgAlert.setPositiveButton(R.string.string_okay,
-                                            new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                }
-                                            });
-                                    dlgAlert.setCancelable(true);
-                                    dlgAlert.create().show();
-                                    break;
-                            }
-                        }
-                    };
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setMessage("Download completed. RedWolf 2GB Variants requires reboot to complete installation. Are you sure to reboot and install?").setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener).show();
-                }
-                }
-            if(progressdialog.isShowing()){progressdialog.dismiss();}
-            }
-        }
-
-    void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
-        byte[] bytesIn = new byte[BUFFER_SIZE];
-        int read = 0;
-        while ((read = zipIn.read(bytesIn)) != -1) {
-            bos.write(bytesIn, 0, read);
-        }
-        bos.close();
-    }
-    //-----------------DOWNLOAD------------
 
     public static void copy(File src, File dst) throws IOException {
         try (InputStream in = new FileInputStream(src)) {

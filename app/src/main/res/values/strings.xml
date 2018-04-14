@@ -42,6 +42,10 @@
     <string name="download_speed_kb">%1$s KB/s</string>
     <string name="download_speed_mb">%1$s MB/s</string>
 
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="cancel">Cancel</string>
+
     <!-- Fab Menu -->
     <string name="fab_main">RedWolf Actions</string>
     <string name="fab_flash">Download &amp; Install</string>
@@ -62,4 +66,14 @@
     <string name="extracting_ramdisk">Extracting ramdisk&#8230;</string>
     <string name="reading_prop">Reading recovery properties&#8230;</string>
     <string name="failed">Failed</string>
+
+    <!-- Notification -->
+    <string name="notification_cancelled">Download cancelled</string>
+    <string name="notification_completed">Download completed</string>
+    <string name="notification_paused">Download paused</string>
+    <string name="notification_error">Unknown error</string>
+
+    <!-- Messages -->
+    <string name="flashing">Flashing recovery image&#8230;</string>
+    <string name="flash_finished">RedWolf successfully flashed.</string>
 </resources>
