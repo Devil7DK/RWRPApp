@@ -257,15 +257,6 @@ public class Downloader extends AsyncTask<String, Integer, String> {
         } finally {
             t.cancel();
             wakeLock.release();
-            try{
-                File temp = new File(mTempFilePath);
-                File download = new File(mDownloadFilePath);
-                if(download.exists())download.delete();
-                temp.renameTo(download);
-            }catch(Exception ex){
-                ex.printStackTrace();
-                return ex.getMessage();
-            }
         }
         return null;
     }
@@ -374,6 +365,14 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                 downloadTask.onDownloadCanceled(this.ID);
             }else{
                 setNotificationComplete(activity.getString(R.string.notification_completed));
+                try{
+                    File temp = new File(mTempFilePath);
+                    File download = new File(mDownloadFilePath);
+                    if(download.exists())download.delete();
+                    temp.renameTo(download);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
                 downloadTask.onDownloadCompleted(this.ID,this.mDownloadFilePath);
             }
         }
