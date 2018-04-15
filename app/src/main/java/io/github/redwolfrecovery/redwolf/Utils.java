@@ -31,6 +31,7 @@ public class Utils {
     static String appFileDirectory;
     static String dumpimage_path;
     static String unpackbootimg_path;
+    static String busybox_path;
 
     public static long GetMemorySize(Context mContext) {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
@@ -130,19 +131,18 @@ public class Utils {
                 temp.delete();
             }else{temp.mkdirs();}
 
-            String line;
             Process process = Runtime.getRuntime().exec("su");
             OutputStream stdin = process.getOutputStream();
-            InputStream stderr = process.getErrorStream();
-            InputStream stdout = process.getInputStream();
 
             String cmd1 = "cd "+ temp.getAbsolutePath() +"\n";
             String cmd2 = dumpimage_path + " /dev/block/bootdevice/by-name/recovery " + tempImg.getAbsolutePath() + "\n";
             String cmd3 = unpackbootimg_path + " --input " + tempImg.getAbsolutePath() + " --ramdisk " + ramdisk.getAbsolutePath() + "\n";
-            String cmd4 = "gzip -cd " + ramdisk.getAbsolutePath() + " | cpio -iv\n";
+            String cmd4 = busybox_path + " gzip -cd " + ramdisk.getAbsolutePath() + " | " + busybox_path + " cpio -iv\n";
             String cmd5 = "chmod -R 0777 " + temp.getAbsolutePath() + "\n";
             String cmd6 = "rm -rf !(default.prop)" +"\n";
             String cmd7 = "mv default.prop " + propfile.getAbsolutePath() + "\n";
+
+            Log.e("CheckForUpdate1",cmd4);
 
             stdin.write(cmd1.getBytes());
             stdin.write(cmd2.getBytes());
@@ -156,7 +156,6 @@ public class Utils {
             stdin.flush();
 
             stdin.close();
-            
             process.waitFor();
             process.destroy();
 
@@ -165,7 +164,6 @@ public class Utils {
 
                 prop.load(new FileInputStream(propfile.getAbsolutePath()));
                 String v1 = prop.getProperty("ro.bootimage.build.date.utc","");
-                //propfile.delete();
                 return v1;
             }catch (Exception ex){
                 ex.printStackTrace();
@@ -185,12 +183,16 @@ public class Utils {
             appFileDirectory = context.getFilesDir().getPath();
             String dumpimage_name = "dump_image";
             String unpackbootimg_name = "unpackbootimg";
+            String gzip_name = "busybox";
             dumpimage_path = appFileDirectory + File.separator + dumpimage_name;
             unpackbootimg_path = appFileDirectory + File.separator + unpackbootimg_name;
+            busybox_path = appFileDirectory + File.separator + gzip_name;
             copyAssets(dumpimage_name, dumpimage_path, context);
             copyAssets(unpackbootimg_name, unpackbootimg_path, context);
+            copyAssets(gzip_name, busybox_path, context);
             (new File (dumpimage_path)).setExecutable(true);
             (new File (unpackbootimg_path)).setExecutable(true);
+            (new File (busybox_path)).setExecutable(true);
         }catch(Exception ex){ex.printStackTrace();}
     }
 
