@@ -8,13 +8,8 @@
     <string name="device_maintainer">Maintainer</string>
     <string name="version">Latest version</string>
     <string name="last_update">Last updated</string>
-    <string name="install_download">Download &amp; Install</string>
-    <string name="install_local">Install from storage</string>
-    <string name="backup_recovery">Backup current recovery</string>
-    <string name="unknown">Unknown</string>
     <string name="title_finished">Action finished</string>
     <string name="backup_complete">Recovery partition successfully backed up to the selected location</string>
-    <string name="question_confirm_flash">Are you sure you want to flash the following file as recovery?</string>
     <string name="string_okay">OK</string>
     <string name="string_yes">Yes</string>
     <string name="string_cancel">Cancel</string>
@@ -23,9 +18,7 @@
     <string name="flash_completed_local">Selected image has been successfully flashed as recovery</string>
     <string name="su_error">Root access denied. Please allow root permissions to use this app</string>
     <string name="fs_error">Filesystem access denied. Please allow necessary permissions to use this app</string>
-    <string name="install_download_cancel">Installation of ZIP file for 2GB variant was cancelled. However, the downloaded file is placed in "Downloads". You can flash it from your existing custom recovery</string>
     <string name="error">Error</string>
-    <string name="info">Information</string>
     <string name="reboot">Reboot</string>
     <string name="reboot_recovery">Reboot to recovery</string>
     <string name="reboot_bootloader">Reboot to bootloader</string>
@@ -43,11 +36,9 @@
     <string name="download_speed_mb">%1$s MB/s</string>
 
     <string name="pause">Pause</string>
-    <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
 
     <!-- Fab Menu -->
-    <string name="fab_main">RedWolf Actions</string>
     <string name="fab_flash">Download &amp; Install</string>
     <string name="fab_flash_local">Install from storage</string>
     <string name="fab_backup">Backup current recovery</string>
@@ -69,5 +60,4 @@
 
     <!-- Messages -->
     <string name="flashing">Flashing recovery image&#8230;</string>
-    <string name="flash_finished">RedWolf successfully flashed.</string>
 </resources>
