@@ -211,7 +211,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                         mUpdateETF_Speed = true;
                         if(mLastDownloadSize != 0) {
                             mSizeOf5Sec = mCurrentSizeDownloaded - mLastDownloadSize;
-                            mSizeOf5Sec = (getMovingTotal(mSizeOf5Sec)/2);
+                            mSizeOf5Sec = (getMovingAverage(mSizeOf5Sec));
                         }
                         mLastDownloadSize = mCurrentSizeDownloaded;
                     }
@@ -227,7 +227,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
                     long endTime = System.currentTimeMillis();
                     long rate = 0;
-                    try{if(mSizeOf5Sec == 0){rate=(((mCurrentSizeDownloaded) / ((endTime - startTime) / 1000)));}else{rate=(((mSizeOf5Sec) / 5));}}catch(Exception ex){}
+                    try{if(mSizeOf5Sec == 0){rate=(((mCurrentSizeDownloaded) / ((endTime - startTime) / 1000)));}else{rate=mSizeOf5Sec;}}catch(Exception ex){}
                     rate = (long)(Math.round( rate * 100.0 ) / 100.0);
                     mSpeedRate = Utils.getDownloadSpeedString(activity, rate);
 
@@ -309,15 +309,18 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
 
     long[] mMovingTotal = new long[10];
-    private long getMovingTotal(long currentValue){
+    private long getMovingAverage(long currentValue){
         long total = 0;
+        int d = 0;
         for(int i =1; i < 10; i++){
-            mMovingTotal[i-1] = mMovingTotal[i];
-            total += mMovingTotal[i];
+            long val = mMovingTotal[i];
+            mMovingTotal[i-1] = val;
+            total += val;
         }
         total += currentValue;
         mMovingTotal[9] = currentValue;
-        return total;
+        for(int i = 0; i < 10; i++)if(mMovingTotal[i] != 0)d +=1 ;
+        return (total / d);
     }
 
     @Override
