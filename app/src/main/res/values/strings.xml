@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RedWolf Recovery Project</string>
+    <string name="app_name">Official RWRP App</string>
     <string name="device_name">Device</string>
     <string name="device_ram">Memory (RAM)</string>
     <string name="device_support">Support Status</string>
