@@ -51,14 +51,16 @@
                         android:layout_width="137dp"
                         android:layout_height="wrap_content"
                         android:text="@string/device_name"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_device_name_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
                 </TableRow>
 
                 <TableRow
@@ -76,14 +78,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/device_ram"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_device_size_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
                 </TableRow>
 
                 <TableRow
@@ -101,14 +105,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/device_support"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_support_status_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
                 </TableRow>
 
                 <TableRow
@@ -126,14 +132,16 @@
                         android:layout_width="95dp"
                         android:layout_height="wrap_content"
                         android:text="@string/device_maintainer"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_maintainer_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                 </TableRow>
 
@@ -152,14 +160,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/version"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_version_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
                 </TableRow>
 
                 <TableRow
@@ -177,14 +187,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/build"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_build_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
                 </TableRow>
 
                 <TableRow
@@ -202,14 +214,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/last_update"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/txt_updated_val"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="right"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textSize="17sp" />
 
                 </TableRow>
 
