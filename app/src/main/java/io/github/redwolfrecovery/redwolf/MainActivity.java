@@ -540,11 +540,19 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean("supported",true);
                     editor.putString("rw_build",Build_);
                     editor.apply();
+                    fab_DownloadFlash.setEnabled(true);
+                    btn_CheckUpdates.setVisibility(View.VISIBLE);
                 }
             }
             if(device_found==false)
             {
                 txt_SupportStatus.setText(R.string.device_support_false);
+                txt_Maintainer.setText("NA");
+                txt_LatestVersion.setText("NA");
+                txt_LastUpdated.setText("NA");
+                txt_Build.setText("NA");
+                fab_DownloadFlash.setEnabled(false);
+                btn_CheckUpdates.setVisibility(View.GONE);
             }
         }
     }
