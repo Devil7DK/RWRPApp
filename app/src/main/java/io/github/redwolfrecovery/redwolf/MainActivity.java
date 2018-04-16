@@ -254,7 +254,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void CheckForUpdates(){
         CheckforUpdatesTask task = CheckforUpdatesTask.getInstance(this, XML_URL, device_name);
-        task.execute(this);
+        if(task.getStatus() != AsyncTask.Status.RUNNING){
+            task.execute(this);
+        }
     }
 
     private void DownloadAndInstall(){

@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,10 +30,9 @@ import java.util.Properties;
 
 public class Utils {
 
-    static String appFileDirectory;
-    static String dumpimage_path;
-    static String unpackbootimg_path;
-    static String busybox_path;
+    private static String dumpimage_path;
+    private static String unpackbootimg_path;
+    private static String busybox_path;
 
     public static long GetMemorySize(Context mContext) {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
@@ -78,7 +79,7 @@ public class Utils {
             executor.waitFor();
             int iabd = executor.exitValue();
             if(iabd != 0){return false;}else{return true;}
-        }catch(Exception ex){}
+        }catch(Exception ex){Crashlytics.logException(ex);}
      return false;
     }
 
@@ -133,6 +134,7 @@ public class Utils {
 
             Process process = Runtime.getRuntime().exec("su");
             OutputStream stdin = process.getOutputStream();
+            InputStream stderr = process.getErrorStream();
 
             String cmd1 = "cd "+ temp.getAbsolutePath() +"\n";
             String cmd2 = dumpimage_path + " /dev/block/bootdevice/by-name/recovery " + tempImg.getAbsolutePath() + "\n";
@@ -141,8 +143,6 @@ public class Utils {
             String cmd5 = "chmod -R 0777 " + temp.getAbsolutePath() + "\n";
             String cmd6 = "rm -rf !(default.prop)" +"\n";
             String cmd7 = "mv default.prop " + propfile.getAbsolutePath() + "\n";
-
-            Log.e("CheckForUpdate1",cmd4);
 
             stdin.write(cmd1.getBytes());
             stdin.write(cmd2.getBytes());
@@ -154,6 +154,13 @@ public class Utils {
 
             stdin.write("exit\n".getBytes());
             stdin.flush();
+
+            String line;
+            BufferedReader br =
+                    new BufferedReader(new InputStreamReader(stderr));
+            while ((line = br.readLine()) != null) {
+                Crashlytics.log("ERROR RUN CMDs : " + line);
+            }
 
             stdin.close();
             process.waitFor();
@@ -167,9 +174,10 @@ public class Utils {
                 return v1;
             }catch (Exception ex){
                 ex.printStackTrace();
+                Crashlytics.logException(ex);
             }
 
-        } catch (Exception ex) {
+        } catch (Exception ex) {Crashlytics.logException(ex);
         } finally {
             if(temp.exists()){
                 temp.delete();
@@ -180,6 +188,7 @@ public class Utils {
 
     public static void PrepareExecutables(Context context){
         try{
+            String appFileDirectory;
             appFileDirectory = context.getFilesDir().getPath();
             String dumpimage_name = "dump_image";
             String unpackbootimg_name = "unpackbootimg";
@@ -193,7 +202,7 @@ public class Utils {
             (new File (dumpimage_path)).setExecutable(true);
             (new File (unpackbootimg_path)).setExecutable(true);
             (new File (busybox_path)).setExecutable(true);
-        }catch(Exception ex){ex.printStackTrace();}
+        }catch(Exception ex){ex.printStackTrace();Crashlytics.logException(ex);}
     }
 
 
@@ -227,6 +236,7 @@ public class Utils {
             out.flush();
             out = null;
         } catch(IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
     }

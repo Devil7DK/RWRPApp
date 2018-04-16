@@ -1,6 +1,7 @@
 package io.github.redwolfrecovery.redwolf;
 
 import android.app.Activity;
+import android.app.ApplicationErrorReport;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,8 @@ import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.crashlytics.android.Crashlytics;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,6 +66,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
             devicelist = doc.getElementsByTagName("device");
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
             mError = e.getMessage();
             return false;
         }
@@ -99,6 +103,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
             }
         }catch (Exception ex){
             ex.printStackTrace();
+            Crashlytics.logException(ex);
             mError = ex.getMessage();
             return false;
         }
@@ -136,6 +141,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
         dialog.setMessage(mContext.getString(R.string.checking_update));
         dialog.setIndeterminate(true);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setCancelable(false);
         dialog.show();
     }
 

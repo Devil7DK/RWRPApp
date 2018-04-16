@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -240,6 +242,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                     output.write(data, 0, count);
                 }
             } catch (Exception e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
                 return e.toString();
             } finally {
@@ -320,7 +323,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
         total += currentValue;
         mMovingTotal[9] = currentValue;
         for(int i = 0; i < 10; i++)if(mMovingTotal[i] != 0)d +=1 ;
-        return (total / d);
+        try{return (total / d);}catch(Exception ex){return 0;}
     }
 
     @Override
@@ -375,6 +378,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                     temp.renameTo(download);
                 }catch(Exception ex){
                     ex.printStackTrace();
+                    Crashlytics.logException(ex);
                 }
                 downloadTask.onDownloadCompleted(this.ID,this.mDownloadFilePath);
             }
