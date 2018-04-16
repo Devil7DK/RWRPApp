@@ -1,11 +1,9 @@
 package io.github.redwolfrecovery.redwolf;
 
 import android.app.Activity;
-import android.app.ApplicationErrorReport;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -28,42 +26,47 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Created by Devil7DK on 4/13/18
  **/
-public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
+public class CheckForUpdatesTask extends AsyncTask<Context, Void, Boolean>{
 
-    private static CheckforUpdatesTask mInstance;
-    private static Context mContext;
+    private static CheckForUpdatesTask mInstance;
     private static ProgressDialog dialog;
     private static String mURL;
     private static String mDeviceName;
-    private static String mBuildID_Local,mBuildID_Remote;
+    private static String mBuildID_Remote;
     private static String mError = "";
+    private static Object mActivity;
 
-    private CheckforUpdatesTask() {
+    private static Object mContext;
+
+    private CheckForUpdatesTask() {
     }
 
-    public static CheckforUpdatesTask getInstance(Context context, String URL, String deviceName) {
+    public static CheckForUpdatesTask getInstance(Context context, String URL, String deviceName, Activity activity) {
         if (mInstance == null) {
-            mInstance = new CheckforUpdatesTask();
+            mInstance = new CheckForUpdatesTask();
         }
         mContext = context;
         mURL = URL;
         mDeviceName = deviceName;
+        mActivity = activity;
         return mInstance;
     }
 
 
     @Override
     protected Boolean doInBackground(Context... params) {
-        mContext = params[0];
+        Context mContext = params[0];
 
-        NodeList devicelist;
+        String mBuildID_Local;
+
+        NodeList device_list;
         try {
             URL url = new URL(mURL);
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(new InputSource(url.openStream()));
             doc.getDocumentElement().normalize();
-            devicelist = doc.getElementsByTagName("device");
+            device_list = doc.getElementsByTagName("device");
         } catch (Exception e) {
             e.printStackTrace();
             Crashlytics.logException(e);
@@ -73,8 +76,8 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
 
         try{
 
-            for (int temp = 0; temp < devicelist.getLength(); temp++) {
-                Element eElement = (Element)devicelist.item(temp);
+            for (int temp = 0; temp < device_list.getLength(); temp++) {
+                Element eElement = (Element)device_list.item(temp);
                 List device= Arrays.asList(eElement.getAttribute("name").split(","));
                 if(device.contains(mDeviceName))
                 {
@@ -83,7 +86,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 }
             }
 
-            mBuildID_Local = Utils.getRecoveryIncrimentalVersion(mContext);
+            mBuildID_Local = Utils.getRecoveryIncrementalVersion(mContext);
 
             if(mBuildID_Local.equals("")){
                 Log.e("CheckForUpdate", "Cannot retrieve build id from remote.");
@@ -95,11 +98,7 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 return false;
             }else{
                 Log.i("CheckForUpdate",  "Build ID : Local - " + mBuildID_Local + " Remote - " + mBuildID_Remote);
-                if(mBuildID_Remote.equals(mBuildID_Local)){
-                    return false;
-                }else{
-                    return true;
-                }
+                return mBuildID_Remote.equals(mBuildID_Local);
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -115,12 +114,12 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
         mInstance = null;
         if(dialog.isShowing())dialog.dismiss();
         if(result.equals(true)){
-            Toast.makeText(mContext,R.string.update_available, Toast.LENGTH_LONG).show();
+            Toast.makeText((Context)  mContext,R.string.update_available, Toast.LENGTH_LONG).show();
         }else{
             if(mError.equals("")){
-                Toast.makeText(mContext,R.string.update_not_available, Toast.LENGTH_LONG).show();
+                Toast.makeText((Context)  mContext,R.string.update_not_available, Toast.LENGTH_LONG).show();
             }else{
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder((Context)  mContext);
                 alertDialogBuilder.setTitle(R.string.failed);
                 alertDialogBuilder.setMessage(mError);
                         alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -132,13 +131,13 @@ public class CheckforUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 alertDialog.show();
             }
         }
-        MainActivity.CheckForUpdateResult(result, mError);
+        MainActivity.CheckForUpdateResult(result, mError, (MainActivity) mActivity);
     }
 
     @Override
     protected void onPreExecute() {
-        dialog = new ProgressDialog(mContext);
-        dialog.setMessage(mContext.getString(R.string.checking_update));
+        dialog = new ProgressDialog((Context)  mContext);
+        dialog.setMessage(((Context) mContext).getString(R.string.checking_update));
         dialog.setIndeterminate(true);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setCancelable(false);

@@ -1,7 +1,6 @@
 package io.github.redwolfrecovery.redwolf;
 
 import android.app.ActivityManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
@@ -24,6 +23,8 @@ import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
+import static android.content.Context.ACTIVITY_SERVICE;
+
 /**
  * Created by root on 3/1/18.
  */
@@ -36,10 +37,9 @@ public class Utils {
 
     public static long GetMemorySize(Context mContext) {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        ActivityManager activityManager = (ActivityManager)mContext.getSystemService(mContext.ACTIVITY_SERVICE);
-        activityManager.getMemoryInfo(mi);
-        long availableMegs = mi.totalMem / 1048576L;
-        return availableMegs;
+        ActivityManager activityManager = (ActivityManager)mContext.getSystemService(ACTIVITY_SERVICE);
+        if(activityManager != null)activityManager.getMemoryInfo(mi);
+        return mi.totalMem / 1048576L;
     }
 
     //To do something after 'secs' of delay.
@@ -62,8 +62,9 @@ public class Utils {
         boolean haveConnectedMobile = false;
 
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo[] netInfo = cm.getAllNetworkInfo();
-        for (NetworkInfo ni : netInfo) {
+        NetworkInfo ni = null;
+        if (cm != null) ni = cm.getActiveNetworkInfo();
+        if(ni != null){
             if (ni.getTypeName().equalsIgnoreCase("WIFI"))
                 if (ni.isConnected())
                     haveConnectedWifi = true;
@@ -78,7 +79,7 @@ public class Utils {
             Process executor = Runtime.getRuntime().exec("su -c ls /data/data");
             executor.waitFor();
             int iabd = executor.exitValue();
-            if(iabd != 0){return false;}else{return true;}
+            return iabd == 0;
         }catch(Exception ex){Crashlytics.logException(ex);}
      return false;
     }
@@ -119,7 +120,7 @@ public class Utils {
         }
     }
 
-    public static String getRecoveryIncrimentalVersion(Context context){
+    public static String getRecoveryIncrementalVersion(Context context){
         PrepareExecutables(context);
 
         File temp = new File(context.getCacheDir() + File.separator + "temp");
@@ -129,8 +130,8 @@ public class Utils {
 
         try {
             if(temp.exists()){
-                temp.delete();
-            }else{temp.mkdirs();}
+                if(!temp.delete()) Log.i("getVersion","Failed to delete dir");
+            }else{if(!temp.mkdirs())Log.e("getVersion","Make dir failed");}
 
             Process process = Runtime.getRuntime().exec("su");
             OutputStream stdin = process.getOutputStream();
@@ -170,8 +171,7 @@ public class Utils {
             try{
 
                 prop.load(new FileInputStream(propfile.getAbsolutePath()));
-                String v1 = prop.getProperty("ro.bootimage.build.date.utc","");
-                return v1;
+                return prop.getProperty("ro.bootimage.build.date.utc","");
             }catch (Exception ex){
                 ex.printStackTrace();
                 Crashlytics.logException(ex);
@@ -180,13 +180,13 @@ public class Utils {
         } catch (Exception ex) {Crashlytics.logException(ex);
         } finally {
             if(temp.exists()){
-                temp.delete();
+                if(!temp.delete()) Log.i("getVersion","Failed to delete dir");
             }
         }
             return "";
     }
 
-    public static void PrepareExecutables(Context context){
+    private static void PrepareExecutables(Context context){
         try{
             String appFileDirectory;
             appFileDirectory = context.getFilesDir().getPath();
@@ -199,14 +199,14 @@ public class Utils {
             copyAssets(dumpimage_name, dumpimage_path, context);
             copyAssets(unpackbootimg_name, unpackbootimg_path, context);
             copyAssets(gzip_name, busybox_path, context);
-            (new File (dumpimage_path)).setExecutable(true);
-            (new File (unpackbootimg_path)).setExecutable(true);
-            (new File (busybox_path)).setExecutable(true);
+            if(!(new File (dumpimage_path)).setExecutable(true))Log.e("PrepareExes","SetExecutable failed");
+            if(!(new File (unpackbootimg_path)).setExecutable(true))Log.e("PrepareExes","SetExecutable failed");
+            if(!(new File (busybox_path)).setExecutable(true))Log.e("PrepareExes","SetExecutable failed");
         }catch(Exception ex){ex.printStackTrace();Crashlytics.logException(ex);}
     }
 
 
-    public static String getArch(){
+    private static String getArch(){
         String deviceArch = android.os.Build.SUPPORTED_ABIS[0];
         if(deviceArch.contains("armeabi")){
             return "arm";
@@ -220,11 +220,11 @@ public class Utils {
         return "arm";
     }
 
-    public static void copyAssets(String filename, String fullpath, Context context) {
+    private static void copyAssets(String filename, String fullpath, Context context) {
         AssetManager assetManager = context.getAssets();
 
-        InputStream in = null;
-        OutputStream out = null;
+        InputStream in;
+        OutputStream out;
 
         try {
             in = assetManager.open(getArch() + "/" + filename);
@@ -232,16 +232,14 @@ public class Utils {
             out = new FileOutputStream(outFile);
             copyFile(in, out);
             in.close();
-            in = null;
             out.flush();
-            out = null;
         } catch(IOException e) {
             Crashlytics.logException(e);
             e.printStackTrace();
         }
     }
 
-    public static void copyFile(InputStream in, OutputStream out) throws IOException {
+    private static void copyFile(InputStream in, OutputStream out) throws IOException {
         try {
 
             try {

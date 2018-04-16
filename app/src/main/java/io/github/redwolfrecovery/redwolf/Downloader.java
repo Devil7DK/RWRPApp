@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -37,15 +36,14 @@ import java.util.TimerTask;
 public class Downloader extends AsyncTask<String, Integer, String> {
     private String ID;
 
-    private Activity activity;
+    private Object activity;
     private DownloadTask downloadTask;
 
-    private ProgressBar mProgressBar;
-    private TextView mProgressPercentage;
-    private TextView mSpeed;
-    private TextView mRemainingTime;
-    private Button btn_Cancel;
-    private Button btn_Pause;
+    private Object mProgressBar;
+    private Object mProgressPercentage;
+    private Object mSpeed;
+    private Object mRemainingTime;
+    private Object btn_Pause;
 
     private String mURL;
     private String mFilename;
@@ -53,14 +51,13 @@ public class Downloader extends AsyncTask<String, Integer, String> {
     private String mDownloadFilePath;
     private String mTempFilePath;
 
-    boolean mIsPausing;
-    long mTotalSizeDownloaded;
-    long mTotalSize;
-    long mCurrentSizeDownloaded;
+    private boolean mIsPausing;
+    private long mTotalSizeDownloaded;
+    private long mCurrentSizeDownloaded;
 
-    long mETF = -1;
-    String mSpeedRate;
-    boolean mUpdateETF_Speed;
+    private long mETF = -1;
+    private String mSpeedRate;
+    private boolean mUpdateETF_Speed;
 
     private long mLastDownloadSize;
     private long mSizeOf5Sec;
@@ -72,7 +69,6 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
     private NotificationManager mNotifyManager;
     private NotificationCompat.Builder mBuilder;
-    private String NOTIFICATION_CHANNEL = "downloader";
 
     public interface DownloadTask {
         void onDownloadCompleted(String ID, String FilePath);
@@ -115,12 +111,12 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
     private void Pause(){
         setNotificationPaused();
-        btn_Pause.setText("Resume");
+        ((Button)btn_Pause).setText(R.string.resume);
         this.isPaused = true;
     }
 
     private void Resume(){
-        btn_Pause.setText("Pause");
+        ((Button)btn_Pause).setText(R.string.pause);
         this.isPaused = false;
     }
 
@@ -136,23 +132,20 @@ public class Downloader extends AsyncTask<String, Integer, String> {
         this.downloadTask = listener;
     }
 
-    public String getDownloadFilePath(){return this.mDownloadFilePath;}
-
-    public String getTempFilePath(){return this.mTempFilePath;}
-
     private void CleanUp(){
         File tmpFile = new File(mTempFilePath);
         File downFile = new File(mDownloadFilePath);
-        if(tmpFile.exists())tmpFile.delete();
-        if(downFile.exists())downFile.delete();
+        if(tmpFile.exists())if(!tmpFile.delete())Log.e("Downloader.Cleanup","Temp file delete failed");
+        if(downFile.exists())if(!downFile.delete())Log.e("Downloader.Cleanup","Temp file delete failed");
     }
 
     @Override
     protected String doInBackground(@NonNull String... ID) {
         this.ID = ID[0];
-        PowerManager powerManager = (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
-        wakeLock.acquire();
+        PowerManager powerManager = (PowerManager) ((Activity) activity).getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = null;
+        if(powerManager != null) wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
+        if(wakeLock != null) wakeLock.acquire(7200000);
         Timer t = new Timer();
         AcquirePreviousSession();
 
@@ -162,7 +155,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
             HttpURLConnection connection = null;
 
             File BaseDir = new File(mBasePath);
-            if(!BaseDir.exists()){BaseDir.mkdirs();}
+            if(!BaseDir.exists()){if(!BaseDir.mkdirs())Log.e("Downloader","Make dir failed");}
 
             try {
                 URL url = new URL(mURL);
@@ -187,7 +180,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                     }
                 }
 
-                long fileLength = - 1;
+                long fileLength;
                 long length = connection.getContentLength();
                 Log.i("Downloader", "File Length " + length);
                 if (mIsPausing) {
@@ -195,7 +188,6 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                 } else {
                     fileLength = length;
                 }
-                mTotalSize = fileLength;
 
                 input = connection.getInputStream();
                 if (mIsPausing)
@@ -229,13 +221,13 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
                     long endTime = System.currentTimeMillis();
                     long rate = 0;
-                    try{if(mSizeOf5Sec == 0){rate=(((mCurrentSizeDownloaded) / ((endTime - startTime) / 1000)));}else{rate=mSizeOf5Sec;}}catch(Exception ex){}
+                    try{if(mSizeOf5Sec == 0){rate=(((mCurrentSizeDownloaded) / ((endTime - startTime) / 1000)));}else{rate=mSizeOf5Sec;}}catch(Exception ex){ex.getMessage();}
                     rate = (long)(Math.round( rate * 100.0 ) / 100.0);
-                    mSpeedRate = Utils.getDownloadSpeedString(activity, rate);
+                    mSpeedRate = Utils.getDownloadSpeedString((Activity) activity, rate);
 
                     if (fileLength > 0)
                     {
-                        try{mETF = Math.round(( (fileLength - mTotalSizeDownloaded) / rate) * 1000);}catch(Exception ex){}
+                        try{mETF = Math.round(( (fileLength - mTotalSizeDownloaded) / rate) * 1000);}catch(Exception ex){ex.getMessage();}
                         publishProgress((int) (mTotalSizeDownloaded * 100 / fileLength));
                     }else{publishProgress(-1);}
 
@@ -259,7 +251,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
             }
         } finally {
             t.cancel();
-            wakeLock.release();
+            if(wakeLock != null) wakeLock.release();
         }
         return null;
     }
@@ -267,20 +259,19 @@ public class Downloader extends AsyncTask<String, Integer, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        LayoutInflater inflater = activity.getLayoutInflater();
-        View alertLayout = inflater.inflate(R.layout.download_item, null);
-        mProgressBar = (ProgressBar) alertLayout.findViewById(R.id.progressBar);
-        mProgressPercentage = (TextView) alertLayout.findViewById(R.id.progress_TextView);
-        mSpeed = (TextView) alertLayout.findViewById(R.id.downloadSpeedTextView);
-        mRemainingTime = (TextView) alertLayout.findViewById(R.id.remaining_TextView);
-        btn_Cancel = (Button) alertLayout.findViewById(R.id.btn_cancel);
-        btn_Pause = (Button) alertLayout.findViewById(R.id.btn_pause);
+        View alertLayout = View.inflate((Activity) activity, R.layout.download_item, null);
+        mProgressBar = alertLayout.findViewById(R.id.progressBar);
+        mProgressPercentage = alertLayout.findViewById(R.id.progress_TextView);
+        mSpeed = alertLayout.findViewById(R.id.downloadSpeedTextView);
+        mRemainingTime = alertLayout.findViewById(R.id.remaining_TextView);
+        Button btn_Cancel =  (Button) alertLayout.findViewById(R.id.btn_cancel);
+        btn_Pause = alertLayout.findViewById(R.id.btn_pause);
 
         for(int i = 0; i<10; i++ ){
             mMovingTotal[i] = 0;
         }
 
-        mProgressBar.getIndeterminateDrawable().setColorFilter(activity.getResources().getColor(R.color.colorPrimaryDark,null),android.graphics.PorterDuff.Mode.MULTIPLY);
+        ((ProgressBar) mProgressBar).getIndeterminateDrawable().setColorFilter(((Activity) activity).getResources().getColor(R.color.colorPrimaryDark,null),android.graphics.PorterDuff.Mode.MULTIPLY);
 
         btn_Cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -288,7 +279,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                 Cancel();
             }
         });
-        btn_Pause.setOnClickListener(new View.OnClickListener() {
+        ((Button) btn_Pause).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isPaused){
@@ -302,7 +293,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
         initNotification();
         setNotificationIntermediate();
 
-        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+        AlertDialog.Builder alert = new AlertDialog.Builder((Activity) activity);
         alert.setTitle("Downloading");
         alert.setView(alertLayout);
         alert.setCancelable(false);
@@ -311,7 +302,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
     }
 
 
-    long[] mMovingTotal = new long[10];
+    private long[] mMovingTotal = new long[10];
     private long getMovingAverage(long currentValue){
         long total = 0;
         int d = 0;
@@ -330,26 +321,26 @@ public class Downloader extends AsyncTask<String, Integer, String> {
     protected void onProgressUpdate(Integer... progress) {
         super.onProgressUpdate(progress);
         if(progress[0]>=0){
-            mProgressBar.setIndeterminate(false);
-            mProgressBar.setMax(100);
-            mProgressBar.setProgress(progress[0]);
-            mProgressPercentage.setText(progress[0] + "%");
+            ((ProgressBar) mProgressBar).setIndeterminate(false);
+            ((ProgressBar) mProgressBar).setMax(100);
+            ((ProgressBar) mProgressBar).setProgress(progress[0]);
+            ((TextView) mProgressPercentage).setText((progress[0] + "%"));
 
             if(mUpdateETF_Speed){
-                String etastring = Utils.getETAString(activity, mETF);
-                mSpeed.setText(mSpeedRate);
-                mRemainingTime.setText(etastring);
+                String eta_string = Utils.getETAString((Activity) activity, mETF);
+                ((TextView) mSpeed).setText(mSpeedRate);
+                ((TextView) mRemainingTime).setText(eta_string);
                 mUpdateETF_Speed = false;
-                setNotificationProgress(progress[0] + "%", progress[0], etastring);
+                setNotificationProgress(progress[0] + "%", progress[0], eta_string);
             }
         }else{
-            mProgressBar.setIndeterminate(true);
-            mProgressBar.setMax(100);
-            mProgressBar.setProgress(progress[0]);
-            mProgressPercentage.setText("");
+            ((ProgressBar) mProgressBar).setIndeterminate(true);
+            ((ProgressBar) mProgressBar).setMax(100);
+            ((ProgressBar) mProgressBar).setProgress(progress[0]);
+            ((TextView) mProgressPercentage).setText("");
             if(mUpdateETF_Speed){
-                mSpeed.setText(mSpeedRate);
-                mRemainingTime.setText("");
+                ((TextView) mSpeed).setText(mSpeedRate);
+                ((TextView) mRemainingTime).setText("");
                 mUpdateETF_Speed = false;
                 setNotificationProgress(mSpeedRate);
             }
@@ -363,19 +354,19 @@ public class Downloader extends AsyncTask<String, Integer, String> {
         }
 
         if (result != null) {
-            setNotificationComplete(activity.getString(R.string.notification_error));
+            setNotificationComplete(((Activity) activity).getString(R.string.notification_error));
             downloadTask.onDownloadError(this.ID,result);
         }else{
             if (isCancelled) {
-                setNotificationComplete(activity.getString(R.string.notification_cancelled));
+                setNotificationComplete(((Activity) activity).getString(R.string.notification_cancelled));
                 downloadTask.onDownloadCanceled(this.ID);
             }else{
-                setNotificationComplete(activity.getString(R.string.notification_completed));
+                setNotificationComplete(((Activity) activity).getString(R.string.notification_completed));
                 try{
                     File temp = new File(mTempFilePath);
                     File download = new File(mDownloadFilePath);
-                    if(download.exists())download.delete();
-                    temp.renameTo(download);
+                    if(download.exists())if(!download.delete())Log.i("Downloader","Failed to delete file.");
+                    if(!temp.renameTo(download))Log.e("Downloader","Failed to rename.");
                 }catch(Exception ex){
                     ex.printStackTrace();
                     Crashlytics.logException(ex);
@@ -387,18 +378,16 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
     //-------------------Notification-------------------
     private void initNotification(){
-        NotificationManager notificationManager =
-                (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotifyManager = (NotificationManager) activity.getApplicationContext().getSystemService(Activity.NOTIFICATION_SERVICE);
-        mBuilder = new NotificationCompat.Builder(activity.getApplicationContext());
+        mNotifyManager = (NotificationManager) ((Activity) activity).getApplicationContext().getSystemService(Activity.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(((Activity) activity).getApplicationContext());
 
         mBuilder.setContentTitle(mFilename)
                 .setContentText(null)
                 .setSmallIcon(R.drawable.ic_downloader);
-        Intent notificationIntent = new Intent(activity, MainActivity.class);
+        Intent notificationIntent = new Intent((Activity) activity, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent intent = PendingIntent.getActivity(activity, 0,
+        PendingIntent intent = PendingIntent.getActivity((Activity) activity, 0,
                 notificationIntent, 0);
         mBuilder.setContentIntent(intent);
         mBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
@@ -428,7 +417,7 @@ public class Downloader extends AsyncTask<String, Integer, String> {
 
     private void setNotificationPaused(){
         mBuilder.setSubText(null)
-                .setContentText(activity.getString(R.string.notification_paused));
+                .setContentText(((Activity) activity).getString(R.string.notification_paused));
         mNotifyManager.notify(1, mBuilder.build());
     }
     private void setNotificationComplete(String message){
@@ -438,10 +427,10 @@ public class Downloader extends AsyncTask<String, Integer, String> {
                 .setProgress(0,0,false)
                 .setSmallIcon(R.drawable.ic_downloader);
         mBuilder.setOngoing(false);
-        Intent intent = new Intent(activity, MainActivity.class);
+        Intent intent = new Intent((Activity) activity, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("NOTIFICATION_ID", 1);
-        PendingIntent dismissIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent dismissIntent = PendingIntent.getActivity((Activity) activity, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         mBuilder.setContentIntent(dismissIntent);
         mNotifyManager.notify(1, mBuilder.build());
     }

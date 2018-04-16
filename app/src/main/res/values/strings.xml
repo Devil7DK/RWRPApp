@@ -26,6 +26,7 @@
     <string name="confirm_reboot_msg">Do you really want to reboot?</string>
     <string name="confirm_reboot_recovery">Do you really want to reboot into recovery?</string>
     <string name="confirm_reboot_bootloader">Do you really want to reboot into bootloader?</string>
+    <string name="NA">NA</string>
 
     <!-- Downloader -->
     <string name="download_eta_sec">%1$ds left</string>
@@ -36,6 +37,7 @@
     <string name="download_speed_mb">%1$s MB/s</string>
 
     <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
 
     <!-- Fab Menu -->

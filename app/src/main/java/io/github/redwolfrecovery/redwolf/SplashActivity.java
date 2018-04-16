@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,12 +23,11 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
-        boolean SU;
-        SU=Utils.isRootAvailable();
+        boolean SU = Utils.isRootAvailable();
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {Perms = false;}
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {Perms = false;}
         dlgAlert = new AlertDialog.Builder(this);
-        if(SU==false) {
+        if(!SU) {
             dlgAlert.setMessage(R.string.su_error);
             dlgAlert.setTitle(R.string.error);
             dlgAlert.setPositiveButton(R.string.string_okay,
@@ -39,11 +39,11 @@ public class SplashActivity extends AppCompatActivity {
             dlgAlert.setCancelable(false);
             dlgAlert.create().show();
         }else{
-            if(Perms==false){
+            if(!Perms){
                 String Per[]={Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE};
-                if(askedForPermission == false){ActivityCompat.requestPermissions(this,Per,1);askedForPermission = true;}
+                if(!askedForPermission){ActivityCompat.requestPermissions(this,Per,1);askedForPermission = true;}
             }
-            if(Perms==true){
+            if(Perms){
                 final Intent intent = new Intent(this, MainActivity.class);
                 Utils.delay(1, new Utils.DelayCallback() {
                     @Override
@@ -57,7 +57,7 @@ public class SplashActivity extends AppCompatActivity {
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case 1: {
                 if (grantResults.length > 0
@@ -82,7 +82,6 @@ public class SplashActivity extends AppCompatActivity {
                     dlgAlert.setCancelable(false);
                     dlgAlert.create().show();
                 }
-                return;
             }
         }
     }

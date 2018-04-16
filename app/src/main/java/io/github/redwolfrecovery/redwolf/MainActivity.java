@@ -11,13 +11,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -41,28 +38,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class MainActivity extends AppCompatActivity {
     AlertDialog.Builder dlgAlert;
-    String device_name;
-    String device_build;
+    static String device_name;
+    static String device_build;
     TextView txt_Device;
     TextView txt_Memory;
     TextView txt_SupportStatus;
@@ -75,33 +63,28 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab_LocalFlash;
     FloatingActionButton fab_Backup;
     DownloadXML XML_Check;
-    Boolean Checked=false;
-    private static final int BUFFER_SIZE = 4096;
-    SharedPreferences preferences;
+    static Boolean Checked=false;
+    static SharedPreferences preferences;
     final String XML_URL= "https://redwolfrecovery.github.io/redwolf.xml";
     final String DownloadBaseURL="https://mirrors.c0urier.net/android/Dadi11/RedWolf/";
     String Filename;
-    URL url;
-    URLConnection urlconnection ;
-    int FileSize;
-    InputStream inputstream;
-    OutputStream outputstream;
-    byte dataArray[] = new byte[1024];
-    long totalSize = 0;
     Long RAMSize;
-    static LinearLayout layout_UpdateStatus;
-    static TextView txt_UpdateStatus;
-    static ImageView img_UpdateStatus;
-    static Button btn_CheckUpdates;
-    static Context mContext;
+    LinearLayout layout_UpdateStatus;
+    TextView txt_UpdateStatus;
+    ImageView img_UpdateStatus;
+    Button btn_CheckUpdates;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle(" RedWolf Recovery Project");
-        getSupportActionBar().setLogo(R.drawable.ic_wolf_color_small);
-        getSupportActionBar().setDisplayUseLogoEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(" RedWolf Recovery Project");
+            getSupportActionBar().setLogo(R.drawable.ic_wolf_color_small);
+            getSupportActionBar().setDisplayUseLogoEnabled(true);
+        }
         setContentView(R.layout.activity_redwolf_home);
         RAMSize = Utils.GetMemorySize(this);
         txt_Device = (TextView) findViewById(R.id.txt_device_name_val);
@@ -111,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         txt_LatestVersion = (TextView) findViewById(R.id.txt_version_val);
         txt_LastUpdated = (TextView) findViewById(R.id.txt_updated_val);
         layout_UpdateStatus = (LinearLayout)  findViewById(R.id.layout_UpdateStatus);
-        layout_UpdateStatus.setVisibility(View.GONE);
+        if(layout_UpdateStatus != null)layout_UpdateStatus.setVisibility(View.GONE);
         txt_UpdateStatus = (TextView) findViewById(R.id.txtUpdateStatus);
         img_UpdateStatus = (ImageView) findViewById(R.id.imgUpdateStatus);
         txt_Build = (TextView) findViewById(R.id.txt_build_val);
@@ -148,16 +131,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         setCustomAnimation(fabMenu,R.drawable.ic_arrow_up, R.drawable.ic_arrow_down);
-        XML_Check = new DownloadXML();
+        XML_Check = DownloadXML.getInstance(XML_URL);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         device_name = Build.DEVICE;
-        txt_Device.setText(Build.MODEL + " (" + Build.DEVICE + ")");
-        txt_Memory.setText(Mb2Gb(RAMSize) + " GB");
+        txt_Device.setText((Build.MODEL + " (" + Build.DEVICE + ")"));
+        txt_Memory.setText((Mb2Gb(RAMSize) + " GB"));
         LoadPrefs();
         dlgAlert = new AlertDialog.Builder(this);
         if(Utils.isNetworkAvailable(this)){
             try{
-                XML_Check.execute(XML_URL);
+                XML_Check.execute(this);
             }
             catch(Exception ex){
                 Log.e("Details Check",ex.getMessage());
@@ -185,26 +168,25 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    public static void CheckForUpdateResult(Boolean result, String Error){
-        Log.i("T","MAINCHECKERSULT");
+    public static void CheckForUpdateResult(Boolean result, String Error, MainActivity activity){
         if(result){
-            layout_UpdateStatus.setVisibility(View.VISIBLE);
-            img_UpdateStatus.setImageResource(R.drawable.ic_update_available);
-            txt_UpdateStatus.setText(R.string.update_available);
-            txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateOkay));
-            btn_CheckUpdates.setVisibility(View.GONE);
+            activity.layout_UpdateStatus.setVisibility(View.VISIBLE);
+            activity.img_UpdateStatus.setImageResource(R.drawable.ic_update_available);
+            activity.txt_UpdateStatus.setText(R.string.update_available);
+            activity.txt_UpdateStatus.setTextColor(activity.getColor(R.color.colorUpdateOkay));
+            activity.btn_CheckUpdates.setVisibility(View.GONE);
         }else{
             if(Error.equals("")){
-                layout_UpdateStatus.setVisibility(View.VISIBLE);
-                img_UpdateStatus.setImageResource(R.drawable.ic_update_notavailable);
-                txt_UpdateStatus.setText(R.string.update_not_available);
-                txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateOkay));
-                btn_CheckUpdates.setVisibility(View.GONE);
+                activity.layout_UpdateStatus.setVisibility(View.VISIBLE);
+                activity.img_UpdateStatus.setImageResource(R.drawable.ic_update_notavailable);
+                activity.txt_UpdateStatus.setText(R.string.update_not_available);
+                activity.txt_UpdateStatus.setTextColor(activity.getColor(R.color.colorUpdateOkay));
+                activity.btn_CheckUpdates.setVisibility(View.GONE);
             }else{
-                layout_UpdateStatus.setVisibility(View.VISIBLE);
-                img_UpdateStatus.setImageResource(R.drawable.ic_update_warning);
-                txt_UpdateStatus.setText(R.string.update_error);
-                txt_UpdateStatus.setTextColor(txt_UpdateStatus.getContext().getColor(R.color.colorUpdateError));
+                activity.layout_UpdateStatus.setVisibility(View.VISIBLE);
+                activity.img_UpdateStatus.setImageResource(R.drawable.ic_update_warning);
+                activity.txt_UpdateStatus.setText(R.string.update_error);
+                activity.txt_UpdateStatus.setTextColor(activity.getColor(R.color.colorUpdateError));
             }
         }
     }
@@ -246,14 +228,14 @@ public class MainActivity extends AppCompatActivity {
         boolean supported = preferences.getBoolean("supported",false);
         String rw_build = preferences.getString("rw_build","");
         if(supported){txt_SupportStatus.setText(R.string.device_support_true);}else{txt_SupportStatus.setText(R.string.device_support_false);}
-        if(!maintainer.equalsIgnoreCase("")){txt_Maintainer.setText(maintainer);}else{txt_Maintainer.setText("NA");}
-        if(!last_updated.equalsIgnoreCase("")){txt_LastUpdated.setText(last_updated);}else{txt_LastUpdated.setText("NA");}
-        if(!rw_version.equalsIgnoreCase("")){txt_LatestVersion.setText(rw_version);}else{txt_LatestVersion.setText("NA");}
-        if(!rw_build.equalsIgnoreCase("")){txt_Build.setText(rw_build);}else{txt_Build.setText("NA");}
+        if(!maintainer.equalsIgnoreCase("")){txt_Maintainer.setText(maintainer);}else{txt_Maintainer.setText(R.string.NA);}
+        if(!last_updated.equalsIgnoreCase("")){txt_LastUpdated.setText(last_updated);}else{txt_LastUpdated.setText(R.string.NA);}
+        if(!rw_version.equalsIgnoreCase("")){txt_LatestVersion.setText(rw_version);}else{txt_LatestVersion.setText(R.string.NA);}
+        if(!rw_build.equalsIgnoreCase("")){txt_Build.setText(rw_build);}else{txt_Build.setText(R.string.NA);}
     }
 
     private void CheckForUpdates(){
-        CheckforUpdatesTask task = CheckforUpdatesTask.getInstance(this, XML_URL, device_name);
+        CheckForUpdatesTask task = CheckForUpdatesTask.getInstance(this, XML_URL, device_name, this);
         if(task.getStatus() != AsyncTask.Status.RUNNING){
             task.execute(this);
         }
@@ -312,6 +294,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void InstallFromLocal(){
         OpenFileDialog dialog = new OpenFileDialog(this);
+        dialog.setFileIcon(getDrawable(R.drawable.ic_file));
+        dialog.setFolderIcon(getDrawable(R.drawable.ic_folder));
+        dialog.setAccessDeniedMessage(getString(R.string.fs_error));
         dialog.setFilter("(.*).img");
         dialog.setOpenDialogListener(new OpenFileDialog.OpenDialogListener() {
             @Override
@@ -435,19 +420,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void copy(File src, File dst) throws IOException {
-        try (InputStream in = new FileInputStream(src)) {
-            try (OutputStream out = new FileOutputStream(dst)) {
-                // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            }
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -461,16 +433,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void OnNetworkChanged() {
-        if(Checked==false){
+        if(!Checked){
             if(Utils.isNetworkAvailable(this))
             {
                 if(XML_Check.getStatus() != AsyncTask.Status.RUNNING && XML_Check.getStatus() != AsyncTask.Status.PENDING)
                 {
                     try{
-                        XML_Check.execute(XML_URL);
+                        XML_Check.execute(this);
                     }
                     catch(Exception ex){
-
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -480,47 +452,60 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver networkStateReceiver=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             OnNetworkChanged();
         }
     };
 
     // DownloadXML AsyncTask
-    private class DownloadXML extends AsyncTask<String, Void, Void> {
-        NodeList devicelist;
-        NodeList changeloglist;
+    private static class DownloadXML extends AsyncTask<MainActivity, Void, MainActivity> {
+        NodeList device_list;
+        NodeList changelog_list;
+
+        static DownloadXML mInstance;
+
+        String mURL;
+
+        DownloadXML(String URL) {
+            mURL = URL;
+        }
+
+        static DownloadXML getInstance(String URL) {
+            if (mInstance == null) {
+                mInstance = new DownloadXML(URL);
+            }
+            return mInstance;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
 
         @Override
-        protected Void doInBackground(String... Url) {
+        protected MainActivity doInBackground(MainActivity... activities) {
             try {
-                URL url = new URL(Url[0]);
+                URL url = new URL(mURL);
                 DocumentBuilderFactory dbf = DocumentBuilderFactory
                         .newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
-                // Download the XML file
                 Document doc = db.parse(new InputSource(url.openStream()));
                 doc.getDocumentElement().normalize();
-                // Locate the Tag Name
-                devicelist = doc.getElementsByTagName("device");
-                changeloglist = doc.getElementsByTagName("changelog");
+                device_list = doc.getElementsByTagName("device");
+                changelog_list = doc.getElementsByTagName("changelog");
             } catch (Exception e) {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();
             }
-            return null;
+            return activities[0];
 
         }
 
         @Override
-        protected void onPostExecute(Void args) {
+        protected void onPostExecute(MainActivity activity) {
             boolean device_found=false;
             Checked=true;
-            for (int temp = 0; temp < devicelist.getLength(); temp++) {
-                Element eElement = (Element)devicelist.item(temp);
+            for (int temp = 0; temp < device_list.getLength(); temp++) {
+                Element eElement = (Element)device_list.item(temp);
                 List device= Arrays.asList(eElement.getAttribute("name").split(","));
                 if(device.contains(device_name))
                 {
@@ -530,11 +515,11 @@ public class MainActivity extends AppCompatActivity {
                     String LastUpdated = eElement.getAttribute("date");
                     String Build_ = eElement.getAttribute("build");
                     device_build = Build_;
-                    txt_SupportStatus.setText(R.string.device_support_true);
-                    txt_Maintainer.setText(Maintainer);
-                    txt_LatestVersion.setText(Version_);
-                    txt_LastUpdated.setText(LastUpdated);
-                    txt_Build.setText(Build_);
+                    activity.txt_SupportStatus.setText(R.string.device_support_true);
+                    activity.txt_Maintainer.setText(Maintainer);
+                    activity.txt_LatestVersion.setText(Version_);
+                    activity.txt_LastUpdated.setText(LastUpdated);
+                    activity.txt_Build.setText(Build_);
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("maintainer",Maintainer);
                     editor.putString("rw_version",Version_);
@@ -542,19 +527,19 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean("supported",true);
                     editor.putString("rw_build",Build_);
                     editor.apply();
-                    fab_DownloadFlash.setEnabled(true);
-                    btn_CheckUpdates.setVisibility(View.VISIBLE);
+                    activity.fab_DownloadFlash.setEnabled(true);
+                    activity.btn_CheckUpdates.setVisibility(View.VISIBLE);
                 }
             }
-            if(device_found==false)
+            if(!device_found)
             {
-                txt_SupportStatus.setText(R.string.device_support_false);
-                txt_Maintainer.setText("NA");
-                txt_LatestVersion.setText("NA");
-                txt_LastUpdated.setText("NA");
-                txt_Build.setText("NA");
-                fab_DownloadFlash.setEnabled(false);
-                btn_CheckUpdates.setVisibility(View.GONE);
+                activity.txt_SupportStatus.setText(R.string.device_support_false);
+                activity.txt_Maintainer.setText(R.string.NA);
+                activity.txt_LatestVersion.setText(R.string.NA);
+                activity.txt_LastUpdated.setText(R.string.NA);
+                activity.txt_Build.setText(R.string.NA);
+                activity.fab_DownloadFlash.setEnabled(false);
+                activity.btn_CheckUpdates.setVisibility(View.GONE);
             }
         }
     }
