@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         dlgAlert = new AlertDialog.Builder(this);
         if(Utils.isNetworkAvailable(this)){
             try{
-                XML_Check.execute(this);
+                if(XML_Check.getStatus() != AsyncTask.Status.FINISHED)XML_Check.execute(this);
             }
             catch(Exception ex){
                 Log.e("Details Check",ex.getMessage());
