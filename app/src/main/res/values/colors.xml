@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#9f252b</color>
     <color name="colorPrimaryDark">#892929</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#E51C23</color>
     <color name="colorBack">#ffffff</color>
     <!-- Fab Menu -->
     <color name="colorFabLight">#de0000</color>

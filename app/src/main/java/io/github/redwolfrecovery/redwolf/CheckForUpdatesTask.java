@@ -1,10 +1,15 @@
 package io.github.redwolfrecovery.redwolf;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
@@ -35,13 +40,14 @@ public class CheckForUpdatesTask extends AsyncTask<Context, Void, Boolean>{
     private static String mBuildID_Remote;
     private static String mError = "";
     private static Object mActivity;
-
+    private static Boolean mIsBackground;
     private static Object mContext;
 
     private CheckForUpdatesTask() {
+
     }
 
-    public static CheckForUpdatesTask getInstance(Context context, String URL, String deviceName, Activity activity) {
+    public static CheckForUpdatesTask getInstance(Context context, String URL, String deviceName, Activity activity, Boolean isBackground) {
         if (mInstance == null) {
             mInstance = new CheckForUpdatesTask();
         }
@@ -49,6 +55,7 @@ public class CheckForUpdatesTask extends AsyncTask<Context, Void, Boolean>{
         mURL = URL;
         mDeviceName = deviceName;
         mActivity = activity;
+        mIsBackground = isBackground;
         return mInstance;
     }
 
@@ -98,7 +105,7 @@ public class CheckForUpdatesTask extends AsyncTask<Context, Void, Boolean>{
                 return false;
             }else{
                 Log.i("CheckForUpdate",  "Build ID : Local - " + mBuildID_Local + " Remote - " + mBuildID_Remote);
-                return mBuildID_Remote.equals(mBuildID_Local);
+                return !mBuildID_Remote.equals(mBuildID_Local);
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -108,40 +115,64 @@ public class CheckForUpdatesTask extends AsyncTask<Context, Void, Boolean>{
         }
     }
 
+    private void ShowUpdateAvailableNotification(Context context){
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
+        NotificationManager mNotifyManager = (NotificationManager) context.getSystemService(Activity.NOTIFICATION_SERVICE);
+        mBuilder.setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.update_available_notification))
+                .setSmallIcon(R.drawable.ic_downloader);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent dismissIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        mBuilder.setContentIntent(dismissIntent);
+        mBuilder.setDefaults(Notification.DEFAULT_ALL);
+        mBuilder.setOngoing(false);
+        if(mNotifyManager != null)mNotifyManager.notify(1, mBuilder.build());
+    }
+
     @Override
     protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
         mInstance = null;
-        if(dialog.isShowing())dialog.dismiss();
+        if(!mIsBackground)if(dialog.isShowing())dialog.dismiss();
         if(result.equals(true)){
-            Toast.makeText((Context)  mContext,R.string.update_available, Toast.LENGTH_LONG).show();
+            if(!mIsBackground){
+                Toast.makeText((Context)  mContext,R.string.update_available, Toast.LENGTH_LONG).show();
+            }else{
+                ShowUpdateAvailableNotification((Context) mContext);
+            }
         }else{
             if(mError.equals("")){
-                Toast.makeText((Context)  mContext,R.string.update_not_available, Toast.LENGTH_LONG).show();
+                if(!mIsBackground)Toast.makeText((Context)  mContext,R.string.update_not_available, Toast.LENGTH_LONG).show();
             }else{
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder((Context)  mContext);
-                alertDialogBuilder.setTitle(R.string.failed);
-                alertDialogBuilder.setMessage(mError);
-                        alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        });
-                AlertDialog alertDialog = alertDialogBuilder.create();
-                alertDialog.show();
+                if(!mIsBackground){
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder((Context)  mContext);
+                    alertDialogBuilder.setTitle(R.string.failed);
+                    alertDialogBuilder.setMessage(mError);
+                    alertDialogBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+                }
             }
         }
-        MainActivity.CheckForUpdateResult(result, mError, (MainActivity) mActivity);
+        if(!mIsBackground)MainActivity.CheckForUpdateResult(result, mError, (MainActivity) mActivity);
     }
 
     @Override
     protected void onPreExecute() {
-        dialog = new ProgressDialog((Context)  mContext);
-        dialog.setMessage(((Context) mContext).getString(R.string.checking_update));
-        dialog.setIndeterminate(true);
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.setCancelable(false);
-        dialog.show();
+        if(!mIsBackground){
+            dialog = new ProgressDialog((Context)  mContext);
+            dialog.setMessage(((Context) mContext).getString(R.string.checking_update));
+            dialog.setIndeterminate(true);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.setCancelable(false);
+            dialog.show();
+        }
     }
 
 

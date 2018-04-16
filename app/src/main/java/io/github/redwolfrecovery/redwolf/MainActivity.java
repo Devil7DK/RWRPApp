@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     DownloadXML XML_Check;
     static Boolean Checked=false;
     static SharedPreferences preferences;
-    final String XML_URL= "https://redwolfrecovery.github.io/redwolf.xml";
+    public static final String XML_URL= "https://redwolfrecovery.github.io/redwolf.xml";
     final String DownloadBaseURL="https://mirrors.c0urier.net/android/Dadi11/RedWolf/";
     String Filename;
     Long RAMSize;
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         });
         setCustomAnimation(fabMenu,R.drawable.ic_arrow_up, R.drawable.ic_arrow_down);
         XML_Check = DownloadXML.getInstance(XML_URL);
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         device_name = Build.DEVICE;
         txt_Device.setText((Build.MODEL + " (" + Build.DEVICE + ")"));
         txt_Memory.setText((Mb2Gb(RAMSize) + " GB"));
@@ -235,10 +235,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void CheckForUpdates(){
-        CheckForUpdatesTask task = CheckForUpdatesTask.getInstance(this, XML_URL, device_name, this);
+        CheckForUpdatesTask task = CheckForUpdatesTask.getInstance(this, XML_URL, device_name, this, false);
         if(task.getStatus() != AsyncTask.Status.RUNNING){
             task.execute(this);
         }
+        /*JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        jobScheduler.cancelAll();
+
+        JobInfo job = new JobInfo.Builder(0, new ComponentName(this, CheckForUpdateService.class))
+                .setMinimumLatency(10 * 1000)
+                .build();
+        if(jobScheduler.schedule(job)>0){
+            Log.e("redwolf","Successfully scheduled job: " );
+        }else{
+            Log.e("redwolf",
+                    "RESULT_FAILURE: " );
+        }*/
     }
 
     private void DownloadAndInstall(){
@@ -371,12 +383,14 @@ public class MainActivity extends AppCompatActivity {
                             command="reboot bootloader";
                             break;
                     }
-                    try {
-                        Process SU = Runtime.getRuntime().exec("su -c " + command);
-                        SU.waitFor();
-                    }
-                    catch(Exception ex){
-                        Log.e("Reboot",ex.getMessage());
+                    if(!command.equals("")){
+                        try {
+                            Process SU = Runtime.getRuntime().exec("su -c " + command);
+                            SU.waitFor();
+                        }
+                        catch(Exception ex){
+                            Log.e("Reboot",ex.getMessage());
+                        }
                     }
                 }
             }
@@ -394,6 +408,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.reboot_bootloader:
                 dlgAlert.setMessage(R.string.confirm_reboot_bootloader).setPositiveButton(R.string.string_yes, dialogClickListener)
                         .setNegativeButton(R.string.string_cancel, dialogClickListener).show();
+                break;
+            case R.id.settings:
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
         }
         return true;
@@ -521,6 +538,7 @@ public class MainActivity extends AppCompatActivity {
                     activity.txt_LastUpdated.setText(LastUpdated);
                     activity.txt_Build.setText(Build_);
                     SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("device_name",device_name);
                     editor.putString("maintainer",Maintainer);
                     editor.putString("rw_version",Version_);
                     editor.putString("last_updated",LastUpdated);
